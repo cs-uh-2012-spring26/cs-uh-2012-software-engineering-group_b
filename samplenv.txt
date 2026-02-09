@@ -1,0 +1,19 @@
+# IMPORTANT: This is a sample template provided as a starting point for your .env file
+# 
+# In practice, .env files should NEVER be committed to version control
+# as they often contain sensitive information (API keys, passwords, etc.)
+#
+# Copy this file into a file named .env and edit it as needed
+# Your new .env file will not be tracked by git by default (see .gitignore)
+# Thus, you are the only one who can see any changes made to your .env file
+# In your Running instructions in the README file, let us know what environment
+# variables are needed to run your code
+
+
+# database configs
+MONGO_URI="mongodb://localhost:27017"
+DB_NAME="eventsref_dev"
+MOCK_DB="false"
+
+# server config
+DEBUG="true"
