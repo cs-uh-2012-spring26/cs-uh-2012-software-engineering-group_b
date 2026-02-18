@@ -1,5 +1,5 @@
-from app.apis.student import api as student_ns
-from app.apis.hello import api as hello_ns
+from app.apis.booking import api as booking_ns
+from app.apis.fitness_class import api as fitness_class_ns
 from app.config import Config
 from app.db import DB
 
@@ -15,14 +15,14 @@ def create_app():
     DB.init_app(app)
 
     api = Api(
-        title="Students",
+        title="Fitness Class Management System",
         version="1.0",
-        description="A simple student record keeping API",
+        description="Boilerplate API for class management and booking",
     )
 
     api.init_app(app)
-    api.add_namespace(student_ns)
-    api.add_namespace(hello_ns)
+    api.add_namespace(fitness_class_ns)
+    api.add_namespace(booking_ns)
 
     @api.errorhandler(Exception)
     def handle_input_validation_error(error):
