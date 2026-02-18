@@ -14,7 +14,7 @@ Based on the meeting, the system has the following actors:
 ### Role Clarifications
 
 * Members can book classes. Guests can view classes but must register to book.
-* Trainers can create and manage classes.
+* Trainers can create classes.
 * Admins have the same permissions as Trainers.
 * Admin accounts are created via a token mechanism.
 * Role-based authentication is enforced for restricted endpoints.
@@ -73,6 +73,7 @@ Trainer (Admin has same permissions)
 
 * New class is stored in the system.
 * Class is visible in the class list.
+* The class is available for members to book.
 
 ---
 
@@ -80,7 +81,7 @@ Trainer (Admin has same permissions)
 
 ## Use Case Name
 
-View Upcoming Classes
+View Class List
 
 ## Primary Actor
 
@@ -93,7 +94,7 @@ Guest, Member, Trainer, Admin
 ## Main Success Scenario
 
 1. Actor requests list of classes.
-2. System retrieves upcoming classes.
+2. System retrieves classes from the database.
 3. System returns list including:
 
    * Class name
@@ -128,6 +129,7 @@ Member
 * Class exists.
 * Class is not full.
 * User is authenticated as a Member.
+* Class is not already booked by the User.
 
 ## Main Success Scenario
 
@@ -152,7 +154,7 @@ Member
 
 * Booking is stored.
 * Capacity is updated.
-
+* The system updates the user’s booking records to include the selected class.
 ---
 
 # Use Case 4: View Member/Guest List
@@ -179,7 +181,7 @@ Trainer, Admin
 4. System returns:
 
    * User name
-   * User type (Guest/Member)
+   * User type (Member)
    * Booking timestamp
 
 ## Alternative Flows

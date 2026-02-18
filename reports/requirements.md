@@ -106,6 +106,7 @@ A key clarification gained during the meeting was that:
 * **Trainer and Admin have the same permissions in Sprint 1.**
 * Admin accounts will be created using a **token-based mechanism**.
 * Role-based access control should be enforced for restricted endpoints.
+* Only the CREATE and POST endpoints are needed for sprint 1. There is no need to consider cancellation of the booking, so the DELETE endpoint is not needed for sprint 1.
 
 This clarification significantly impacted the system design by simplifying the permission model and defining how authentication and authorization should be implemented.
 
