@@ -3,8 +3,21 @@ from http import HTTPStatus
 from flask import request
 from flask_restx import Namespace, Resource, fields
 
+from datetime import datetime as dt_mod, timezone
+
 from app.apis import MSG
-from app.db.fitness_classes import FITNESS_CLASS_COLLECTION, CLASS_ID, AVAILABLE_SPOTS, CAPACITY, DATETIME, TITLE, TRAINER_NAME
+from app.db.fitness_classes import (
+    FITNESS_CLASS_COLLECTION,
+    CLASS_ID,
+    AVAILABLE_SPOTS,
+    CAPACITY,
+    DATETIME,
+    TITLE,
+    TRAINER_NAME,
+    build_fitness_class_document,
+    create_fitness_class,
+)
+
 from app.db import DB
 from app.db.utils import serialize_items
 
@@ -73,11 +86,52 @@ class ClassListResource(Resource):
 
         TODO:
         - Validate trainer/admin permissions.
-        - Validate payload fields.
-        - Save class in database.
+        - Validate payload fields. [ X ]
+        - Save class in database. [ X ]
         """
         _payload = request.json if isinstance(request.json, dict) else {}
 
-        return {
-            MSG: "TODO: implement class creation",
-        }, HTTPStatus.NOT_IMPLEMENTED
+        # extract fields
+        title = _payload.get(TITLE)
+        dt = _payload.get(DATETIME)
+        capacity = _payload.get(CAPACITY)
+        trainer_name = _payload.get(TRAINER_NAME)
+
+        # validate payload fields
+        if not title or not dt or not capacity or not trainer_name:
+            return {
+                MSG: f"{TITLE}, {DATETIME}, {CAPACITY}, and {TRAINER_NAME} are required"
+            }, HTTPStatus.BAD_REQUEST
+        
+        # format checks
+        if not isinstance(capacity, int) or capacity <= 0:
+            return {
+                MSG: f"{CAPACITY} must be a positive integer"
+            }, HTTPStatus.BAD_REQUEST
+        try:
+            parsed_dt = dt_mod.fromisoformat(dt.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            return {
+                MSG: f"{DATETIME} must be a valid datetime string"
+            }, HTTPStatus.BAD_REQUEST
+        if not isinstance(title, str) or not isinstance(trainer_name, str) or not title.strip() or not trainer_name.strip():
+            return {
+                MSG: f"{TITLE} and {TRAINER_NAME} must be non-empty strings"
+            }, HTTPStatus.BAD_REQUEST
+        
+        # logic checks
+        if parsed_dt <= dt_mod.now(timezone.utc):
+            return {
+                MSG: f"{DATETIME} must not be in the past"
+            }, HTTPStatus.BAD_REQUEST
+
+        # HERE WE WILL VALIDATE PERMISSIONS 
+        
+        
+        # build and insert
+        doc = build_fitness_class_document(title, dt, capacity, trainer_name)
+        fitness_class = create_fitness_class(doc)
+
+        return {MSG: fitness_class}, HTTPStatus.CREATED
+    
+

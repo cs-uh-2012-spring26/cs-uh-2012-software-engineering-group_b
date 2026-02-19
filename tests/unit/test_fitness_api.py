@@ -2,14 +2,21 @@ from http import HTTPStatus
 
 from app.apis import MSG
 
+from app.db.fitness_classes import CAPACITY, DATETIME, TITLE, TRAINER_NAME
 
-def test_list_classes_template_endpoint(client):
-    response = client.get("/classes/")
-    assert response.status_code == HTTPStatus.NOT_IMPLEMENTED
-    assert response.json == {MSG: "TODO: implement class listing with filters"}
+# tests for POST method
+
+# valid object passed
+def test_add_fitness_class_correct_fields(client):
+    response = client.post("/classes/", json = {
+        TITLE: "Morning Yoga",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer"
+    })
+    assert response.status_code == HTTPStatus.CREATED
 
 
-def test_book_class_template_endpoint(client):
-    response = client.post("/bookings/", json={"class_id": "class_001"})
-    assert response.status_code == HTTPStatus.NOT_IMPLEMENTED
-    assert response.json == {MSG: "TODO: implement class booking"}
+
+
+
