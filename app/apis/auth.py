@@ -5,7 +5,9 @@ import bcrypt
 from functools import wraps
 from http import HTTPStatus
 from app.db import DB
-from app.db.users import build_user_document, create_user
+from app.db.users import PASSWORD_HASH, build_user_document, create_user, get_user_by_email, get_user_by_phone
+
+from app.apis import MSG
 
 api = Namespace("auth", description="Authentication endpoints")
 
@@ -26,6 +28,15 @@ register_model = api.model(
         "birth_date": fields.String(example="1990-01-15", description="User birth date"),
         "password": fields.String(required=True, example="secure_password_123", description="User password"),
     },
+)
+
+login_model = api.model(
+    "LoginRequest",
+    {
+        "email": fields.String(required=True, example="john@example.com", description="User email (email OR phone required)"),
+        "phone": fields.String(example="+971-504-555-0100", description="User phone (email OR phone required)"),
+        "password": fields.String(required=True, example="secure_password_123", description="User password"),
+    }
 )
 
 register_response = api.model(
@@ -129,3 +140,58 @@ class ValidateToken(Resource):
             return {"valid": False}, HTTPStatus.BAD_REQUEST
         
         return {"valid": True, "role": VALID_TOKENS[token]}, HTTPStatus.OK
+    
+
+@api.route('/login')
+class Login(Resource):
+    """Log in existing user; check if account exists and verify password"""
+
+    @api.expect(login_model)
+    @api.response(HTTPStatus.OK, "successful login!")
+    @api.response(HTTPStatus.BAD_REQUEST, "incomplete data")
+    @api.response(HTTPStatus.NOT_FOUND, "user not found")
+    def post(self):
+        data = request.get_json()
+        email = data.get("email")
+        phone = data.get("phone")
+        password = data.get("password")
+
+        # validate fields
+        if not email and not phone:
+            return {
+                MSG: f"{email} or {phone} is required"
+            }, HTTPStatus.BAD_REQUEST
+        if email and phone:
+            return {
+                MSG: f"too many fields completed"
+            }, HTTPStatus.BAD_REQUEST
+        # validate password
+        if not password:
+            return {
+                MSG: f"{password} is required"
+            }, HTTPStatus.BAD_REQUEST
+        
+        
+        # get user associated with account
+        if(email):
+            user = get_user_by_email(email)
+        else:
+            user = get_user_by_phone(phone)
+        if user is None:
+            return {MSG: "User not found!"}, HTTPStatus.NOT_FOUND 
+        
+        # verify that password hash matches
+        if not bcrypt.checkpw(password.encode('utf-8'), user.get(PASSWORD_HASH).encode('utf-8')):
+            return {MSG: "Login credentials and password do not match"}, HTTPStatus.BAD_REQUEST
+        
+        return {MSG: "successful login!"}, HTTPStatus.OK
+
+
+
+        
+        
+
+
+        
+    
+

@@ -37,6 +37,15 @@ def get_user_by_user_id(user_id: str) -> dict | None:
 	user = _collection().find_one({USER_ID: user_id})
 	return serialize_item(user)
 
+def get_user_by_email(email: str) -> dict | None:
+	"""Fetch one user by 'email' from the users collection."""
+	user = _collection().find_one({EMAIL: email})
+	return serialize_item(user)
+
+def get_user_by_phone(phone: str) -> dict | None:
+	"""Fetch one user by 'phone' from the users collection"""
+	user = _collection().find_one({PHONE: phone})
+	return serialize_item(user)
 
 def build_user_document(
 	name: str,
