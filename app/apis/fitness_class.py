@@ -64,6 +64,7 @@ class ClassListResource(Resource):
         "Class list fetched",
         api.model(MSG, {MSG: fields.List(fields.Nested(class_model))}),
     )
+    @require_roles("guest", "member")
     def get(self):
         """
         View class list.

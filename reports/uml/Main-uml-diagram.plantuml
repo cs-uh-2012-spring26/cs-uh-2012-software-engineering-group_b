@@ -17,7 +17,6 @@ actor Admin
 
 ' Left side actors
 Guest --> UC1
-Trainer --> UC1
 
 Trainer --> UC3
 Trainer --> UC4
@@ -25,7 +24,6 @@ Trainer --> UC4
 ' Right side actors (reverse arrow)
 UC1 <-- Member
 UC2 <-- Member
-UC1 <-- Admin
 
 UC3 <-- Admin
 UC4 <-- Admin
