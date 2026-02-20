@@ -31,3 +31,6 @@ build/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+empty_db.py
+seed_db.py

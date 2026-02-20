@@ -22,4 +22,4 @@ class Config(object):
     DB_NAME = get_required_environ("DB_NAME")
     MOCK_DB = get_required_environ("MOCK_DB").lower() == "true"
     DEBUG = get_required_environ("DEBUG").lower() == "true"
-
+    JWT_SECRET_KEY = get_required_environ("JWT_SECRET_KEY")

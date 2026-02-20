@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from flask import request
 from flask_restx import Namespace, Resource, fields
+from app.apis.decorators import require_roles
+from flask_jwt_extended import get_jwt_identity
 
 from datetime import datetime as dt_mod, timezone
 
@@ -62,7 +64,11 @@ class ClassListResource(Resource):
         "Class list fetched",
         api.model(MSG, {MSG: fields.List(fields.Nested(class_model))}),
     )
+<<<<<<< vl-t
     @api.response(HTTPStatus.BAD_REQUEST, "Invalid payload")
+=======
+    @require_roles("guest", "member")
+>>>>>>> main
     def get(self):
         """
         SEE CLASS LIST: allowed for all users
@@ -78,7 +84,11 @@ class ClassListResource(Resource):
     @api.expect(create_class_model)
     @api.response(HTTPStatus.CREATED, "Class created")
     @api.response(HTTPStatus.FORBIDDEN, "Only trainer/admin can create classes")
+<<<<<<< vl-t
     @api.response(HTTPStatus.BAD_REQUEST, "Invalid fields")
+=======
+    @require_roles(["trainer", "admin"])
+>>>>>>> main
     def post(self):
         """
         CREATE NEW CLASS: allowed for trainers/admins

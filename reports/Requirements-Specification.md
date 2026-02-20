@@ -85,11 +85,11 @@ View Class List
 
 ## Primary Actor
 
-Guest, Member, Trainer, Admin
+Guest, Member
 
 ## Preconditions
 
-* None (public endpoint unless authentication is enforced later).
+* None
 
 ## Main Success Scenario
 
