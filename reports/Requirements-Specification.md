@@ -30,8 +30,8 @@ Actors and Use Cases:
 
 * Guest → View Class List, Register
 * Member → login, View Class List, Book Class
-* Trainer → Validate Invite Token, login, View, Class List, Create Class, View Booking List
-* Admin → Validate Invite Token, login, View, Class List, Create Class, View Booking List
+* Trainer → Validate Invite Token, login, View Class List, Create Class, View Booking List
+* Admin → Validate Invite Token, login, View Class List, Create Class, View Booking List
 
 ## Diagram
 
@@ -215,18 +215,15 @@ Guest
 
 ## Main Success Scenarios
 
-1. **Normal User Registration (Member):**
-   * **Who:** Any guest/new user.
-   * **Request:** Actor provides registration details (name, email, password, etc.) and omits the `token` field.
-   * **Result:** System creates the account with the role `"member"` and immediately returns a JWT `access_token`.
-2. **Trainer Registration:**
-   * **Who:** A user who is allowed to become a trainer.
-   * **Request:** Actor provides registration details and includes `"token": "trainer-secret-123"`.
-   * **Result:** System creates the account with the role `"trainer"` and returns a JWT `access_token`.
-3. **Admin Registration:**
-   * **Who:** A user who is allowed to become an admin.
-   * **Request:** Actor provides registration details and includes `"token": "admin-secret-456"`.
-   * **Result:** System creates the account with the role `"admin"` and returns a JWT `access_token`.
+1. Actor submits a registration request containing their details (Name, Email, Phone, Password) and, optionally, an invite `token`.
+2. System validates that the provided email and phone number do not already exist in the system.
+3. System verifies the presence and validity of the invite `token` to determine the user's role:
+   * If the `token` is omitted, the System assigns the role `"member"`.
+   * If the `token` matches the trainer secret, the System assigns the role `"trainer"`.
+   * If the `token` matches the admin secret, the System assigns the role `"admin"`.
+4. System creates the new account in the database with the assigned role.
+5. System generates a JWT `access_token` for the newly created user.
+6. System returns a `201 Created` response containing the JWT `access_token`.
 
 ## Alternative Flows
 

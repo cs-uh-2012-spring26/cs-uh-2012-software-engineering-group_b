@@ -8,6 +8,7 @@ Current scaffolded features:
 2. View Class List (guest/member) — endpoint template
 3. Book a Class (guest/member/member-only by current TODO note) — endpoint template
 4. View Member/Guest List for a class (trainer/admin) — endpoint template
+5. User Registration, Login, and Token Validation (guest/member/trainer/admin) — endpoint template
 
 The current implementation is intentionally boilerplate-first and returns `501 Not Implemented` for feature endpoints while preserving API contracts and TODOs.
 
@@ -26,23 +27,28 @@ to install MongoDB locally. Select the right link for your operating system.
 │   ├── config.py                  # Environment-driven app config
 │   ├── apis/
 │   │   ├── __init__.py            # Shared API constants (e.g., message key)
-│   │   ├── fitness_class.py       # Feature 1 + Feature 2 endpoints
+│   │   ├── auth.py                # Feature 5 endpoints (login, register, validate token)
 │   │   ├── booking.py             # Feature 3 + Feature 4 endpoints
-│   │   └── auth.py                # Login/signup placeholder (not yet wired)
+│   │   ├── decorators.py          # Custom decorators (e.g., role-based access JWT checks)
+│   │   └── fitness_class.py       # Feature 1 + Feature 2 endpoints
 │   └── db/
 │       ├── __init__.py            # DB client setup
+│       ├── bookings.py            # Booking collection/fields
 │       ├── constants.py           # Generic DB constants
 │       ├── fitness_classes.py     # Fitness class collection/fields
-│       ├── bookings.py            # Booking collection/fields
 │       ├── users.py               # User collection/role field definitions
 │       └── utils.py               # Serialization helpers
-├── tests/
-│   ├── unit/
-│   │   ├── conftest.py
-│   │   └── test_fitness_api.py    # Minimal endpoint tests
-│   └── utils.py
-├── reports/                       # Requirements/spec artifacts
 ├── docs/
+├── reports/                       # Requirements/spec artifacts
+├── tests/
+│   ├── __init__.py
+│   ├── unit/
+│   │   ├── __init__.py
+│   │   ├── conftest.py            # Pytest fixtures
+│   │   ├── test_auth_api.py       # Auth endpoint tests
+│   │   ├── test_booking_api.py    # Booking endpoint tests
+│   │   └── test_fitness_api.py    # Fitness class endpoint tests
+│   └── utils.py                   # Testing utilities
 ├── makefile
 ├── requirements.txt
 └── requirements-dev.txt
@@ -105,10 +111,10 @@ Active namespaces:
 - `/bookings`
   - `POST /bookings/` → Book class (template)
   - `GET /bookings/class/<class_id>` → View booking list (template)
-
-Planned namespace:
-
-- `/auth` (signup/login endpoint templates exist in code but are not yet registered in `app/__init__.py`)
+- `/auth`
+  - `POST /auth/register` → Register a new user and return JWT access_token
+  - `POST /auth/login` → Authenticate existing user and return JWT access_token
+  - `POST /auth/validate-token` → Validate a registration invite token
 
 ## Virtual Environment (Manual)
 
@@ -135,6 +141,33 @@ To deactivate the virtual environment:
 ```sh
 deactivate
 ```
+
+# Authentication and Authorization
+This API uses JWT (JSON Web Tokens) to enforce role-based access control.
+
+## Role Assignment during Registration
+Roles are assigned at the time of registration (`/auth/register`) using hard-coded invite tokens:
+
+* Include `"token": "trainer-secret-123"` in the request body to register as a `"trainer"`.
+* Include `"token": "admin-secret-456"` to register as an `"admin"`.
+* Omitting the token defaults the new user to a `"member"`.
+
+## Authenticating API Requests
+After registering or logging in, the API returns an `access_token`. This JWT must be included in the headers of any protected endpoint request:
+
+* **Header name:** `Authorization`
+* **Format:** `Bearer <JWT>`
+
+**CRITICAL:** You must explicitly include the string `Bearer ` (with a trailing space) before the JWT. Omitting this prefix will result in an authorization failure.
+
+## Using Swagger UI
+To authenticate in the Swagger UI:
+
+1. Click the **Authorize** button (top right).
+2. Paste your token in the Value field using the exact format: `Bearer <your_jwt_here>`.
+3. Click **Authorize**. The UI will now automatically attach this header to your protected endpoint requests.
+
+![alt text](image.png)
 
 ## Best Practices
 
