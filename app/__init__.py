@@ -7,11 +7,13 @@ from app.db import DB
 from http import HTTPStatus
 from flask import Flask
 from flask_restx import Api
+from flask_jwt_extended import JWTManager
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    jwt = JWTManager(app)
 
     DB.init_app(app)
 

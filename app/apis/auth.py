@@ -2,6 +2,7 @@
 from flask import request
 from flask_restx import Namespace, Resource, abort, fields
 import bcrypt
+from flask_jwt_extended import create_access_token
 from functools import wraps
 from http import HTTPStatus
 from app.db import DB
@@ -87,7 +88,6 @@ def validate_token(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
 
 @api.route('/register')
 class Register(Resource):
@@ -184,7 +184,14 @@ class Login(Resource):
         if not bcrypt.checkpw(password.encode('utf-8'), user.get(PASSWORD_HASH).encode('utf-8')):
             return {MSG: "Login credentials and password do not match"}, HTTPStatus.BAD_REQUEST
         
-        return {MSG: "successful login!"}, HTTPStatus.OK
+        access_token = create_access_token(
+            identity=user.get("user_id"), 
+            additional_claims={"role": user.get("role", "guest")}
+        )
+        
+        return {
+            MSG: "successful login!", "access_token": access_token
+        }, HTTPStatus.OK
 
 
 

@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from flask import request
 from flask_restx import Namespace, Resource, fields
+from app.apis.decorators import require_roles
+from flask_jwt_extended import get_jwt_identity
 
 from datetime import datetime as dt_mod, timezone
 
@@ -80,6 +82,7 @@ class ClassListResource(Resource):
     @api.expect(create_class_model)
     @api.response(HTTPStatus.CREATED, "Class created")
     @api.response(HTTPStatus.FORBIDDEN, "Only trainer/admin can create classes")
+    @require_roles(["trainer", "admin"])
     def post(self):
         """
         Create class (trainer/admin).

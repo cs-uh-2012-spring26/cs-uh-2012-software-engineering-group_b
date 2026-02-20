@@ -2,7 +2,9 @@ from http import HTTPStatus
 
 from flask import request
 from flask_restx import Namespace, Resource, fields
-
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.apis.decorators import require_roles
+from flask_jwt_extended import get_jwt_identity
 from app.apis import MSG
 from app.db.bookings import (
     booking_exists_for_user,
@@ -77,6 +79,7 @@ class BookingResource(Resource):
     @api.response(HTTPStatus.NOT_FOUND, "User not found")
     @api.response(HTTPStatus.NOT_FOUND, "Class not found")
     @api.response(HTTPStatus.FORBIDDEN, "Only members can book classes")
+    @require_roles(["member"])
     def post(self):
         """
         Book class (member only in current SRS).
@@ -86,9 +89,12 @@ class BookingResource(Resource):
         - Check class availability. [ X ]
         - Prevent duplicate booking and save booking. [ X ]
         """
+        current_user = get_jwt_identity()
+        token_user_id = current_user.get("user_id")
+
         data = request.json if isinstance(request.json, dict) else {}
 
-        user_id = data.get(USER_ID)
+        user_id = token_user_id
         class_id = data.get(CLASS_ID)
         phone = data.get(PHONE)
 
@@ -136,6 +142,7 @@ class BookingListByClassResource(Resource):
         "Booking list fetched",
         api.model("BookingListResponse", {MSG: fields.List(fields.Nested(booking_model))}),
     )
+    @require_roles(["trainer", "admin"])
     @api.response(HTTPStatus.FORBIDDEN, "Only trainer/admin can view booking list")
     def get(self, class_id: str):
         """
