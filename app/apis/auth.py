@@ -67,8 +67,8 @@ def validate_token(f):
             if not role:
                 abort(403, "Invalid or expired token")
         else:
-            # Default to 'user' role if no token provided
-            role = "user"
+            # Default to 'member' role if no token provided
+            role = "member"
 
         # Inject role into request context
         request.registration_role = role

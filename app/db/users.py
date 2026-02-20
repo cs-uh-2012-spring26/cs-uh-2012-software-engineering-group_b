@@ -19,7 +19,6 @@ CREATED_AT = "created_at"
 UPDATED_AT = "updated_at"
 
 # Roles
-ROLE_USER = "user"
 ROLE_GUEST = "guest"
 ROLE_MEMBER = "member"
 ROLE_TRAINER = "trainer"

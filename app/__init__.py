@@ -1,6 +1,6 @@
 from app.apis.booking import api as booking_ns
 from app.apis.fitness_class import api as fitness_class_ns
-from app.apis.auth import api as auth_bp
+from app.apis.auth import api as auth
 from app.config import Config
 from app.db import DB
 
@@ -24,7 +24,7 @@ def create_app():
     api.init_app(app)
     api.add_namespace(fitness_class_ns)
     api.add_namespace(booking_ns)
-    api.add_namespace(auth_bp)
+    api.add_namespace(auth)
 
     @api.errorhandler(Exception)
     def handle_input_validation_error(error):
