@@ -1,6 +1,6 @@
 from app.db import DB
 from app.db.utils import serialize_item
-from uuid import uuid4
+from pymongo import ReturnDocument
 
 from app.db.constants import ID
 
@@ -16,8 +16,33 @@ AVAILABLE_SPOTS = "available_spots"
 TRAINER_NAME = "trainer_name"
 
 
+COUNTERS_COLLECTION = "counters"
+FITNESS_CLASS_ID_COUNTER_KEY = "fitness_class_id"
+
+
 def _collection():
 	return DB.get_collection(FITNESS_CLASS_COLLECTION)
+
+
+def _counters_collection():
+	return DB.get_collection(COUNTERS_COLLECTION)
+
+
+def _next_fitness_class_sequence() -> int:
+	"""Increment and return the next fitness class sequence number."""
+	doc = _counters_collection().find_one_and_update(
+		{"_id": FITNESS_CLASS_ID_COUNTER_KEY},
+		{"$inc": {"seq": 1}},
+		upsert=True,
+		return_document=ReturnDocument.AFTER,
+	)
+	return int(doc.get("seq", 1))
+
+
+def generate_fitness_class_id() -> str:
+	"""Return next human-friendly class id like 'class_001'."""
+	seq = _next_fitness_class_sequence()
+	return f"class_{seq:03d}"
 
 
 def get_class_by_class_id(class_id: str) -> dict | None:
@@ -44,7 +69,7 @@ def build_fitness_class_document(
 ) -> dict: 
 	"""Build a normalized fitness class document ready for persistence."""
 	return {
-		CLASS_ID: class_id or str(uuid4()),
+		CLASS_ID: class_id or generate_fitness_class_id(),
 		TITLE: title,
 		DATETIME: dt,
 		CAPACITY: capacity,

@@ -26,7 +26,7 @@ def runner(app):
 def trainer_headers(app):
     with app.app_context():
         token = create_access_token(
-            identity="trainer-test-user",
-            additional_claims={"role": "trainer"},
+            identity="trainer@example.com",
+            additional_claims={"role": "trainer", "user_id": "trainer-test-user"},
         )
     return {"Authorization": f"Bearer {token}"}

@@ -2,9 +2,8 @@ from http import HTTPStatus
 
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.apis.decorators import require_roles
 from flask_jwt_extended import get_jwt_identity
+from app.apis.decorators import require_roles
 from app.apis import MSG
 from app.db.bookings import (
     booking_exists_for_user,
@@ -26,8 +25,11 @@ from app.db.bookings import (
 from app.db.users import (
     EMAIL as USER_EMAIL_FIELD,
     NAME as USER_NAME_FIELD,
+    PHONE as USER_PHONE_FIELD,
     ROLE as USER_ROLE_FIELD,
     ROLE_MEMBER,
+    USER_ID as USER_ID_FIELD,
+    get_user_by_email,
     get_user_by_user_id,
 )
 from app.db.fitness_classes import decrement_available_spot, get_class_by_class_id
@@ -65,8 +67,7 @@ create_booking_model = api.model(
     "CreateBookingRequest",
     {
         CLASS_ID: fields.String(example=_EXAMPLE_BOOKING[CLASS_ID]),
-        USER_ID: fields.String(example=_EXAMPLE_BOOKING[USER_ID]),
-        PHONE: fields.String(example=_EXAMPLE_BOOKING[PHONE]),
+        USER_EMAIL: fields.String(example=_EXAMPLE_BOOKING[USER_EMAIL], description="Optional; if provided must match the authenticated user's email"),
     },
 )
 
@@ -84,19 +85,29 @@ class BookingResource(Resource):
         """
         BOOK CLASS: allowed for members only
         """
-        current_user = get_jwt_identity()
-        token_user_id = current_user.get("user_id")
+        # Our JWTs use `identity=email`, so get_jwt_identity() returns an email string.
+        token_user_email = get_jwt_identity()
 
         data = request.json if isinstance(request.json, dict) else {}
 
-        user_id = token_user_id
         class_id = data.get(CLASS_ID)
-        phone = data.get(PHONE)
+        request_email = data.get(USER_EMAIL)
 
-        if not user_id or not class_id or not phone:
+        if not token_user_email or not class_id:
             return {
-                MSG: f"{USER_ID}, {CLASS_ID}, and {PHONE} are required",
+                MSG: f"{CLASS_ID} is required",
             }, HTTPStatus.BAD_REQUEST
+
+        if request_email and request_email != token_user_email:
+            return {MSG: "Email does not match authenticated user"}, HTTPStatus.FORBIDDEN
+
+        user = get_user_by_email(token_user_email)
+        if user is None:
+            return {MSG: "User not found"}, HTTPStatus.NOT_FOUND
+
+        user_id = user.get(USER_ID_FIELD)
+        if not user_id:
+            return {MSG: "User not found"}, HTTPStatus.NOT_FOUND
 
         if booking_exists_for_user(user_id, class_id):
             return {MSG: "Booking already exists"}, HTTPStatus.CONFLICT
@@ -104,10 +115,6 @@ class BookingResource(Resource):
         fitness_class = get_class_by_class_id(class_id)
         if fitness_class is None:
             return {MSG: "Class not found"}, HTTPStatus.NOT_FOUND
-
-        user = get_user_by_user_id(user_id)
-        if user is None:
-            return {MSG: "User not found"}, HTTPStatus.NOT_FOUND
 
         if user.get(USER_ROLE_FIELD) != ROLE_MEMBER:
             return {MSG: "Only members can book classes"}, HTTPStatus.FORBIDDEN
@@ -117,7 +124,7 @@ class BookingResource(Resource):
             user_id=user_id,
             user_name=user.get(USER_NAME_FIELD, ""),
             user_email=user.get(USER_EMAIL_FIELD, ""),
-            phone=phone,
+            phone=user.get(USER_PHONE_FIELD),
             role=user.get(USER_ROLE_FIELD, ROLE_MEMBER),
         )
 
