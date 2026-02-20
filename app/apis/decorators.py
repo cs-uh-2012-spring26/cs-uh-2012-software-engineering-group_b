@@ -1,14 +1,18 @@
 from functools import wraps
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask_restx import abort
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError
 
 def require_roles(allowed_roles):
     """decorator to authorize users based on their role claim in the JWT. must be called with a list of roles, e.g., @require_roles(["member"])"""
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
-            #first verify a valid JWT is present in the request header
-            verify_jwt_in_request()
+            try:
+                #first verify a valid JWT is present in the request header
+                verify_jwt_in_request()
+            except (NoAuthorizationError, InvalidHeaderError) as e:
+                abort(401, "Missing or invalid authorization header")
             
             #then extract the decoded payload (claims)
             claims = get_jwt()

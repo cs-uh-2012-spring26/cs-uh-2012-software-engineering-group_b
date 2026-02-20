@@ -46,6 +46,7 @@ register_response = api.model(
         "user_id": fields.String(example="uuid-here"),
         "role": fields.String(example="user", enum=["user", "trainer", "admin"]),
         "message": fields.String(example="User registered as user"),
+        "access_token": fields.String(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", description="JWT access token for authenticated requests"),
     },
 )
 
@@ -118,10 +119,17 @@ class Register(Resource):
         created_user = create_user(user_doc)
         user_id = created_user.get("user_id")
         
+        # Issue JWT access token for immediate use
+        access_token = create_access_token(
+            identity=user_id,
+            additional_claims={"role": role}
+        )
+        
         return {
             "user_id": user_id,
             "role": role,
             "message": f"User registered as {role}",
+            "access_token": access_token,
         }, HTTPStatus.CREATED
 
 
@@ -159,11 +167,11 @@ class Login(Resource):
         # validate fields
         if not email and not phone:
             return {
-                MSG: f"{email} or {phone} is required"
+                MSG: "email or phone is required"
             }, HTTPStatus.BAD_REQUEST
         if email and phone:
             return {
-                MSG: f"too many fields completed"
+                MSG: "provide only email OR phone, not both"
             }, HTTPStatus.BAD_REQUEST
         # validate password
         if not password:

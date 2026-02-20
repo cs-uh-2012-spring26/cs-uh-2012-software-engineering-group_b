@@ -21,6 +21,15 @@ def create_app():
         title="Fitness Class Management System",
         version="1.0",
         description="API for class management and booking",
+        authorizations={
+            "Bearer Auth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+                "description": 'Add a JWT token to the header with ** "Bearer &lt;JWT&gt;"** token to authorize',
+            }
+        },
+        security="Bearer Auth",
     )
 
     api.init_app(app)
