@@ -56,11 +56,19 @@ We prepared targeted clarification questions for each feature. The key questions
 * What booking details should be visible?
 * Should this endpoint require authentication?
 
+### Feature 5: Registration and Login (New)
+
+* How do users create an account?
+* What validation is required during registration? (Update: Must ensure email and phone number are not duplicated).
+* How do users authenticate to receive their token? 
+
 ### Authentication and Authorization
 
 * Which features require authentication?
 * Should role-based access control be enforced?
 * Is simple token-based authentication sufficient for Sprint 1?
+* How are roles assigned during registration? (Update: Hard-coded invite tokens will be used to assign Trainer and Admin roles).
+* How should the token be formatted in the request headers? (Update: The user must explicitly add "Bearer " before the JWT in the Authorization header).
 
 ---
 
@@ -73,6 +81,9 @@ We discussed both normal flows and edge cases, such as:
 * Duplicate bookings
 * Unauthorized access to restricted endpoints
 * Missing or invalid input fields
+* Registration attempts with an already existing email or phone number.
+* Registration attempts with an invalid invite token.
+* API requests failing due to a missing "Bearer " prefix in the Authorization header.
 
 ---
 
@@ -107,6 +118,9 @@ A key clarification gained during the meeting was that:
 * Admin accounts will be created using a **token-based mechanism**.
 * Role-based access control should be enforced for restricted endpoints.
 * Only the CREATE and POST endpoints are needed for sprint 1. There is no need to consider cancellation of the booking, so the DELETE endpoint is not needed for sprint 1.
+* Registration must validate that neither the email nor the phone number is duplicated.
+* **Viewing the class list is public.** Everybody can view the class list, regardless of authentication status.
+* **Strict JWT Formatting:** It must be explained very clearly to consumers of the API that the `Authorization` header requires the exact format: `Bearer <JWT>`. Omitting the "Bearer " prefix will result in an authentication failure.
 
 This clarification significantly impacted the system design by simplifying the permission model and defining how authentication and authorization should be implemented.
 
