@@ -23,7 +23,7 @@ from app.db.fitness_classes import (
 from app.db import DB
 from app.db.utils import serialize_items
 
-api = Namespace("classes", description="Fitness class endpoints")
+api = Namespace("classes", description="    Endpoint for viewing and creating classes")
 
 _EXAMPLE_CLASS = {
     CLASS_ID: "class_001",
@@ -64,13 +64,11 @@ class ClassListResource(Resource):
         "Class list fetched",
         api.model(MSG, {MSG: fields.List(fields.Nested(class_model))}),
     )
+    @api.response(HTTPStatus.BAD_REQUEST, "Invalid payload")
     @require_roles("guest", "member")
     def get(self):
         """
-        View class list.
-
-        TODO:
-        - Fetch upcoming classes from storage.
+        SEE CLASS LIST: allowed for all users
         """
         collection = DB.get_collection(FITNESS_CLASS_COLLECTION)
         
@@ -83,15 +81,11 @@ class ClassListResource(Resource):
     @api.expect(create_class_model)
     @api.response(HTTPStatus.CREATED, "Class created")
     @api.response(HTTPStatus.FORBIDDEN, "Only trainer/admin can create classes")
+    @api.response(HTTPStatus.BAD_REQUEST, "Invalid fields")
     @require_roles(["trainer", "admin"])
     def post(self):
         """
-        Create class (trainer/admin).
-
-        TODO:
-        - Validate trainer/admin permissions.
-        - Validate payload fields. [ X ]
-        - Save class in database. [ X ]
+        CREATE NEW CLASS: allowed for trainers/admins
         """
         _payload = request.json if isinstance(request.json, dict) else {}
 
@@ -128,8 +122,6 @@ class ClassListResource(Resource):
             return {
                 MSG: f"{DATETIME} must not be in the past"
             }, HTTPStatus.BAD_REQUEST
-
-        # HERE WE WILL VALIDATE PERMISSIONS 
         
         
         # build and insert

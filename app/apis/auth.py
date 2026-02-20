@@ -10,7 +10,7 @@ from app.db.users import PASSWORD_HASH, build_user_document, create_user, get_us
 
 from app.apis import MSG
 
-api = Namespace("auth", description="Authentication endpoints")
+api = Namespace("auth", description="    Endpoints for logging in, registering, and validating token")
 
 # Example tokens
 VALID_TOKENS = {
@@ -99,6 +99,7 @@ class Register(Resource):
     @api.response(HTTPStatus.FORBIDDEN, "Invalid token")
     @validate_token
     def post(self):
+        """REGISTER NEW ACCOUNT: allowed for guests"""
         data = request.get_json()
         role = request.registration_role
         password = data.get("password")
@@ -141,6 +142,7 @@ class ValidateToken(Resource):
     @api.response(HTTPStatus.OK, "Token is valid", validate_token_response)
     @api.response(HTTPStatus.BAD_REQUEST, "Token is invalid")
     def post(self):
+        """VALIDATE TOKEN: INTERNAL"""
         data = request.get_json()
         token = data.get("token")
         
@@ -159,6 +161,7 @@ class Login(Resource):
     @api.response(HTTPStatus.BAD_REQUEST, "incomplete data")
     @api.response(HTTPStatus.NOT_FOUND, "user not found")
     def post(self):
+        """LOG INTO ACCOUNT: allowed for members, trainers, and admins"""
         data = request.get_json()
         email = data.get("email")
         phone = data.get("phone")

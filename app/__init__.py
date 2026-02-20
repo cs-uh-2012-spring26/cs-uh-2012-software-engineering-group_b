@@ -18,9 +18,9 @@ def create_app():
     DB.init_app(app)
 
     api = Api(
-        title="Fitness Class Management System",
-        version="1.0",
-        description="API for class management and booking",
+        title="Fitness Class booking and management system",
+        version="(Sprint 1)",
+        description="endpoints for booking, creating classes, and rudimentary account management",
         authorizations={
             "Bearer Auth": {
                 "type": "apiKey",
