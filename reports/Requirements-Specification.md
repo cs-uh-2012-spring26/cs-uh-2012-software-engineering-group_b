@@ -89,7 +89,7 @@ Guest, Member
 
 ## Preconditions
 
-* None is a public endpoint but is only for guest and members to checkout the avaliable classes.
+* None
 
 ## Main Success Scenario
 
