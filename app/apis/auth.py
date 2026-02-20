@@ -34,8 +34,7 @@ register_model = api.model(
 login_model = api.model(
     "LoginRequest",
     {
-        "email": fields.String(required=True, example="john@example.com", description="User email (email OR phone required)"),
-        "phone": fields.String(example="+971-504-555-0100", description="User phone (email OR phone required)"),
+        "email": fields.String(required=True, example="john@example.com", description="User email"),
         "password": fields.String(required=True, example="secure_password_123", description="User password"),
     }
 )
@@ -44,8 +43,8 @@ register_response = api.model(
     "RegisterResponse",
     {
         "user_id": fields.String(example="uuid-here"),
-        "role": fields.String(example="user", enum=["user", "trainer", "admin"]),
-        "message": fields.String(example="User registered as user"),
+            "role": fields.String(example="member", enum=["member", "trainer", "admin"]),
+            "message": fields.String(example="User registered as member"),
         "access_token": fields.String(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", description="JWT access token for authenticated requests"),
     },
 )
@@ -67,7 +66,7 @@ validate_token_response = api.model(
 
 
 def validate_token(f):
-    """decorator to validate registration token. Defaults to 'user' role if no token provided."""
+    """Validate optional registration invite token; defaults to 'member' when absent."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         data = request.get_json()
@@ -102,7 +101,15 @@ class Register(Resource):
         """REGISTER NEW ACCOUNT: allowed for guests"""
         data = request.get_json()
         role = request.registration_role
+        email = data.get("email")
+        phone = data.get("phone")
         password = data.get("password")
+
+        # Reject duplicate accounts
+        if email and get_user_by_email(email) is not None:
+            return {MSG: "Email already registered"}, HTTPStatus.CONFLICT
+        if phone and get_user_by_phone(phone) is not None:
+            return {MSG: "Phone already registered"}, HTTPStatus.CONFLICT
         
         # Hash password with bcrypt (salt is generated automatically)
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -122,8 +129,8 @@ class Register(Resource):
         
         # Issue JWT access token for immediate use
         access_token = create_access_token(
-            identity=user_id,
-            additional_claims={"role": role}
+            identity=email,
+            additional_claims={"role": role, "user_id": user_id}
         )
         
         return {
@@ -164,30 +171,22 @@ class Login(Resource):
         """LOG INTO ACCOUNT: allowed for members, trainers, and admins"""
         data = request.get_json()
         email = data.get("email")
-        phone = data.get("phone")
         password = data.get("password")
 
         # validate fields
-        if not email and not phone:
-            return {
-                MSG: "email or phone is required"
-            }, HTTPStatus.BAD_REQUEST
-        if email and phone:
-            return {
-                MSG: "provide only email OR phone, not both"
-            }, HTTPStatus.BAD_REQUEST
+        if not email:
+            return {MSG: "email is required"}, HTTPStatus.BAD_REQUEST
+        if data.get("phone"):
+            return {MSG: "phone login is not supported; use email"}, HTTPStatus.BAD_REQUEST
         # validate password
         if not password:
             return {
-                MSG: f"{password} is required"
+                MSG: "password is required"
             }, HTTPStatus.BAD_REQUEST
         
         
         # get user associated with account
-        if(email):
-            user = get_user_by_email(email)
-        else:
-            user = get_user_by_phone(phone)
+        user = get_user_by_email(email)
         if user is None:
             return {MSG: "User not found!"}, HTTPStatus.NOT_FOUND 
         
@@ -196,8 +195,11 @@ class Login(Resource):
             return {MSG: "Login credentials and password do not match"}, HTTPStatus.BAD_REQUEST
         
         access_token = create_access_token(
-            identity=user.get("user_id"), 
-            additional_claims={"role": user.get("role", "guest")}
+            identity=user.get("email") or user.get("user_id"),
+            additional_claims={
+                "role": user.get("role", "guest"),
+                "user_id": user.get("user_id"),
+            },
         )
         
         return {

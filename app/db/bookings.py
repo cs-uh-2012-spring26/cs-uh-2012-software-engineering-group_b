@@ -39,7 +39,7 @@ def build_booking_document(
 	user_id: str,
 	user_name: str,
 	user_email: str,
-	phone: str,
+	phone: str | None,
 	role: str,
 	*,
 	booking_id: str | None = None,

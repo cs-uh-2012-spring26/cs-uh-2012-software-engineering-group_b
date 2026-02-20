@@ -65,7 +65,6 @@ class ClassListResource(Resource):
         api.model(MSG, {MSG: fields.List(fields.Nested(class_model))}),
     )
     @api.response(HTTPStatus.BAD_REQUEST, "Invalid payload")
-    @require_roles("guest", "member")
     def get(self):
         """
         SEE CLASS LIST: allowed for all users
