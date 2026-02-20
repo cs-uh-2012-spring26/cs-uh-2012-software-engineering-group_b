@@ -167,8 +167,4 @@ To authenticate in the Swagger UI:
 2. Paste your token in the Value field using the exact format: `Bearer <your_jwt_here>`.
 3. Click **Authorize**. The UI will now automatically attach this header to your protected endpoint requests.
 
-![alt text](image.png)
-
-## Best Practices
-
-See [/docs/BestPractices.md](/docs/BestPractices.md) for advice regarding branch naming and other useful tips.
+![alt text](JWT-auth.gif)
