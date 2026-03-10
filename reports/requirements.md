@@ -56,11 +56,13 @@ We prepared targeted clarification questions for each feature. The key questions
 * What booking details should be visible?
 * Should this endpoint require authentication?
 
-### Feature 5: Registration and Login (New)
+### Feature 5: Registration and Login
 
 * How do users create an account?
 * What validation is required during registration? (Update: Must ensure email and phone number are not duplicated).
 * How do users authenticate to receive their token? 
+
+
 
 ### Authentication and Authorization
 
@@ -99,6 +101,15 @@ We explicitly presented our assumptions about:
 We confirmed these assumptions with the client before finalizing requirements.
 
 ---
+
+## Sprint 2 New Feature
+
+### Feature 6: Send Reminder Emails
+
+* Trainer is able to send reminder emails to the member who are registered for a sepcific class
+* reminder should besent only before the class takes place
+* When there are no members who signed up for the class it should result in a error saying no attendees are there to send reminder to.
+* all of those reuqirements are provided by the Sprint 2 pdf and team evluation/discussion
 
 ## Reflection on the Elicitation Process
 

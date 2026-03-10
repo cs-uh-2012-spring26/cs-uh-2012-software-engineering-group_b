@@ -30,7 +30,7 @@ Actors and Use Cases:
 
 * Guest → View Class List, Register
 * Member → login, View Class List, Book Class
-* Trainer → Validate Invite Token, login, View Class List, Create Class, View Booking List
+* Trainer → Validate Invite Token, login, View Class List, Create Class, View Booking List, Send Email Reminder
 * Admin → Validate Invite Token, login, View Class List, Create Class, View Booking List
 
 ## Diagram
@@ -303,6 +303,49 @@ Trainer, Admin
 ## Postconditions
 
 * Client application can confidently proceed with or reject the registration flow based on the token validity. *(Note: This does not validate JWTs, only registration invite tokens).*
+
+---
+
+# Use Case 8: Send Email Reminder
+
+## Use Case Name
+
+Send Reminder Emails to those who signed up for a class
+
+## Primary Actor
+
+Trainer
+
+## Preconditions
+
+* User is authenticated.
+* User has Trainer role.
+* The attending class exists.
+* There are members who signed up for the class
+* The time is before the class has started 
+
+## Main Success Scenario
+
+1. Actor requests to send a reminder email for a specific scheduled class.
+2. System verifies the user's permissions.
+3. System retrieves the list of members who have booked the class.
+4. System drafts and dispatches the reminder email to all attendees on the retrieved list.
+5. System returns a success confirmation to the actor indicating the emails were successfully sent.
+
+## Alternative Flows
+
+* **Unauthorized Access:**
+  System returns 403 Forbidden.
+* **Class Not Found:**
+  System returns 404 Not Found.
+* **Class Already Occurred:**
+  System returns an error indicating that reminders can only be sent before a class takes place.
+* **No Attendees Booked:**
+  System returns a message indicating no emails were sent because the booking list is empty.
+
+## Postconditions
+
+* Reminder emails are successfully sent to all registered members for the specified class.
 
 ---
 
