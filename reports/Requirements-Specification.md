@@ -30,8 +30,8 @@ Actors and Use Cases:
 
 * Guest → View Class List, Register
 * Member → login, View Class List, Book Class
-* Trainer → Validate Invite Token, login, View Class List, Create Class, View Booking List, Send Email Reminder
-* Admin → Validate Invite Token, login, View Class List, Create Class, View Booking List
+* Trainer → login, View Class List, Create Class, View Booking List, Send Email Reminder
+* Admin → login, View Class List, Create Class, View Booking List
 
 ## Diagram
 
@@ -51,16 +51,17 @@ Trainer (Admin has same permissions)
 
 ## Preconditions
 
-* User is authenticated.
+* User is authenticated with a valid JWT.
 * User has role Trainer or Admin.
 * Required class information is provided.
 
 ## Main Success Scenario
 
-1. Actor sends a request to create a new class.
-2. System validates input fields.
-3. System stores the class in the database.
-4. System returns confirmation with class details.
+1. Actor sends a request (`POST /classes/`) to create a new class, providing all required information in the payload (name, description, date/time, duration, capacity, location).
+2. System verifies the user's JWT `access_token` and role permissions.
+3. System validates the input fields (e.g., ensures capacity is a positive integer, date/time is in the future, no missing fields).
+4. System stores the new class entity in the database.
+5. System returns a `201 Created` confirmation along with the newly generated class ID and details.
 
 ## Alternative Flows
 
@@ -94,10 +95,9 @@ Guest, Member
 
 ## Main Success Scenario
 
-1. Actor requests list of classes.
-2. System retrieves classes from the database.
-3. System returns list including:
-
+1. Actor requests the list of all available fitness classes (`GET /classes/`).
+2. System retrieves the list of upcoming classes from the database.
+3. System returns a `200 OK` response containing a list of class objects, detailing:
    * Class name
    * Date/time
    * Capacity
@@ -127,18 +127,20 @@ Member
 
 ## Preconditions
 
-* Class exists.
-* Class is not full.
-* User is authenticated as a Member.
-* Class is not already booked by the User.
+* User is authenticated with a valid JWT.
+* User has the `"member"` role.
+* The target class exists and has available capacity (`available spots > 0`).
+* User has not already booked this specific class.
 
 ## Main Success Scenario
 
-1. Actor selects a class.
-2. System checks availability.
-3. System creates booking entry.
-4. System decreases available capacity.
-5. System confirms booking.
+1. Actor selects a specific class and sends a booking request (`POST /bookings/`).
+2. System verifies the user's JWT `access_token` for authentication.
+3. System checks the database to confirm the class exists and the user hasn't already booked it.
+4. System verifies the class has available capacity.
+5. System creates a booking record linking the user to the class.
+6. System decrements the available capacity of the class by 1.
+7. System returns a `201 Created` confirmation of the successful booking.
 
 ## Alternative Flows
 
@@ -170,16 +172,17 @@ Trainer, Admin
 
 ## Preconditions
 
-* User is authenticated.
-* User has Trainer or Admin role.
-* Class exists.
+* User is authenticated with a valid JWT.
+* User has `"trainer"` or `"admin"` role.
+* The specific class exists in the system.
 
 ## Main Success Scenario
 
-1. Actor requests booking list for a specific class.
-2. System verifies permissions.
-3. System retrieves list of bookings.
-4. System returns:
+1. Actor requests the list of attendees for a specific class ID (`GET /bookings/class/<class_id>`).
+2. System verifies the user's JWT `access_token` and confirms their elevated role.
+3. System verifies the requested class exists.
+4. System retrieves the list of all users who have successfully booked the class.
+5. System returns a `200 OK` response with an array of attendee details including:
 
    * User name
    * User type (Member)
@@ -272,37 +275,6 @@ Guest, Member, Trainer, Admin
 ## Postconditions
 
 * Actor receives a JWT token to use as a Bearer token for protected endpoints.
-
----
-
-# Use Case 7: Validate Invite Token (`/auth/validate-token`)
-
-## Use Case Name
-
-Check whether an invite token is valid
-
-## Primary Actor
-
-Trainer, Admin
-
-## Preconditions
-
-* User has a token to be that need to be validated to confirm their role
-
-## Main Success Scenario
-
-1. Actor requests to confirm an invite token (e.g., `{ "token": "trainer-secret-123" }`).
-2. System verifies the token against `VALID_TOKENS`.
-3. System returns `200 OK` with `{ "valid": true, "role": "trainer" | "admin" }`.
-
-## Alternative Flows
-
-* **Token is Invalid or Missing:**
-  System returns `400 Bad Request` with `{ "valid": false }`.
-
-## Postconditions
-
-* Client application can confidently proceed with or reject the registration flow based on the token validity. *(Note: This does not validate JWTs, only registration invite tokens).*
 
 ---
 
