@@ -8,7 +8,9 @@ from app import create_app
 @pytest.fixture(scope="session", autouse=True)
 def app():
     load_dotenv()
-    app = create_app()
+    app = create_app({
+        "MOCK_DB": True 
+    })
     yield app
 
 
@@ -28,5 +30,15 @@ def trainer_headers(app):
         token = create_access_token(
             identity="trainer@example.com",
             additional_claims={"role": "trainer", "user_id": "trainer-test-user"},
+        )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def member_headers(app):
+    with app.app_context():
+        token = create_access_token(
+            identity="member@example.com",
+            additional_claims={"role": "member", "user_id": "member-test-user"}
         )
     return {"Authorization": f"Bearer {token}"}

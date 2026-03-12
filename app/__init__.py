@@ -10,9 +10,13 @@ from flask_restx import Api
 from flask_jwt_extended import JWTManager
 
 
-def create_app():
+def create_app(test_config = None):
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    if(test_config):
+        app.config.update(test_config)
+
     jwt = JWTManager(app)
 
     DB.init_app(app)
