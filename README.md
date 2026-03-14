@@ -8,7 +8,8 @@ Current scaffolded features:
 2. View Class List (guest/member) — endpoint template
 3. Book a Class (guest/member/member-only by current TODO note) — endpoint template
 4. View Member/Guest List for a class (trainer/admin) — endpoint template
-5. User Registration, Login, and Token Validation (guest/member/trainer/admin) — endpoint template
+5. User Registration and Login (guest/member/trainer/admin) — endpoint template
+6. Send Reminder Emails (trainer) — endpoint template
 
 The current implementation is intentionally boilerplate-first and returns `501 Not Implemented` for feature endpoints while preserving API contracts and TODOs.
 
@@ -108,6 +109,7 @@ Active namespaces:
 - `/classes`
   - `GET /classes/` → View class list (template)
   - `POST /classes/` → Create class (template)
+  - `POST /classes/<class_id>/reminders` → Send email reminders to class attendees (template)
 - `/bookings`
   - `POST /bookings/` → Book class (template)
   - `GET /bookings/class/<class_id>` → View booking list (template)
