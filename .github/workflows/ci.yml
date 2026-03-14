@@ -3,7 +3,7 @@ name: CI Pipeline
 #Run on every push and PR to the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" , "CI_Workflow/Tianze"]
   pull_request:
     branches: [ "main" ]
 
