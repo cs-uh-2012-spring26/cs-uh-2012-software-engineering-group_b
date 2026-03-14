@@ -1,3 +1,5 @@
+![CI Pipeline](https://github.com/cs-uh-2012-spring26/cs-uh-2012-software-engineering-group_b/actions/workflows/ci.yml/badge.svg)
+
 # Fitness Class Management System API
 
 This repo contains a Flask-RESTX API foundation for the Sprint 1 Fitness Class Management System.
