@@ -32,13 +32,3 @@ def trainer_headers(app):
             additional_claims={"role": "trainer", "user_id": "trainer-test-user"},
         )
     return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-def member_headers(app):
-    with app.app_context():
-        token = create_access_token(
-            identity="member@example.com",
-            additional_claims={"role": "member", "user_id": "member-test-user"}
-        )
-    return {"Authorization": f"Bearer {token}"}
