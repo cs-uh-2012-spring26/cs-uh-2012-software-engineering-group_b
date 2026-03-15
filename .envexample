@@ -17,3 +17,8 @@ MOCK_DB="false"
 JWT_SECRET_KEY="your_jwt_secret_key_here"
 # server config
 DEBUG="true"
+
+# email config
+SENDGRID_API_KEY="your_sendgrid_api_key_here"
+SENDGRID_FROM_EMAIL=noreply@coachly.dev
+SENDGRID_ACCOUNT_EMAIL=your_sendgrid_account_email_here
