@@ -1,0 +1,84 @@
+import json
+from os import environ
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from app.db.fitness_classes import DATETIME, TITLE, TRAINER_NAME
+
+
+def _build_reminder_message(fitness_class: dict) -> tuple[str, str]:
+    title = str(fitness_class.get(TITLE, "your upcoming class"))
+    class_datetime = str(fitness_class.get(DATETIME, "soon"))
+    trainer_name = str(fitness_class.get(TRAINER_NAME, "your trainer"))
+
+    subject = f"Reminder: {title} starts soon"
+    body = (
+        "Hi there,\n\n"
+        f"This is a reminder for your upcoming class: {title}.\n"
+        f"Date & time: {class_datetime}\n"
+        f"Trainer: {trainer_name}\n\n"
+        "See you there!\n"
+        "Coachly Team"
+    )
+    return subject, body
+
+
+def _sendgrid_api_key() -> str:
+    api_key = (environ.get("SENDGRID_API_KEY") or "").strip()
+    if not api_key:
+        raise RuntimeError("SENDGRID_API_KEY is required")
+    return api_key
+
+
+def _sendgrid_send_email(api_key: str, sender_email: str, recipient_email: str, subject: str, body: str) -> None:
+    payload = {
+        "personalizations": [{"to": [{"email": recipient_email}]}],
+        "from": {"email": sender_email},
+        "subject": subject,
+        "content": [{"type": "text/plain", "value": body}],
+    }
+
+    request = Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    with urlopen(request, timeout=20) as response:  # nosec B310 - controlled SendGrid API URL
+        status_code = getattr(response, "status", response.getcode())
+        if status_code not in (200, 202):
+            raise RuntimeError(f"SendGrid rejected email with status {status_code}")
+
+
+def send_class_reminders(
+    recipient_emails: list[str],
+    fitness_class: dict,
+    sender_email: str | None = None,
+) -> dict:
+    """Send one SendGrid email per recipient and return send summary."""
+    recipients = [email.strip() for email in recipient_emails if isinstance(email, str) and email.strip()]
+    unique_recipients = sorted(set(recipients))
+
+    if not unique_recipients:
+        return {"sent_count": 0, "recipients": []}
+
+    api_key = _sendgrid_api_key()
+    sender = sender_email or environ.get("SENDGRID_FROM_EMAIL") or "noreply@coachly.dev"
+    subject, body = _build_reminder_message(fitness_class)
+
+    sent_count = 0
+    sent_recipients: list[str] = []
+
+    try:
+        for recipient in unique_recipients:
+            _sendgrid_send_email(api_key, sender, recipient, subject, body)
+            sent_count += 1
+            sent_recipients.append(recipient)
+    except (HTTPError, URLError) as exc:
+        raise RuntimeError(f"Unable to send reminder email(s): {exc}") from exc
+
+    return {"sent_count": sent_count, "recipients": sent_recipients}
