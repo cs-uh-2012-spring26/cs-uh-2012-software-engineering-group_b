@@ -1,3 +1,9 @@
+"""Unit tests for booking endpoints.
+
+This module validates booking creation and booking-list retrieval,
+including important error paths around user/class validation.
+"""
+
 # internal exports
 from app.db.fitness_classes import CAPACITY, DATETIME, TITLE, TRAINER_NAME
 from app.db.bookings import CLASS_ID, USER_EMAIL
@@ -12,6 +18,7 @@ from flask_jwt_extended import create_access_token
 # create a sample class specifically for testing within the booking endpoint
 @pytest.fixture
 def sample_class(client, trainer_headers):
+    """Create and return a future class id used by booking tests."""
     #TO-DO: add logic that prevents classes from being posted twice?
     # at least in this testing env!
 
@@ -27,6 +34,7 @@ def sample_class(client, trainer_headers):
 # create 2 sample members specifically for testing within the booking endpoint
 @pytest.fixture
 def sample_member1(client, app):
+    """Return member1 tuple (user_id, token), creating user if needed."""
     sample_member1_exists = (get_user_by_email("member1@example.com") is not None)
 
     response = client.post("/auth/register", json ={
@@ -50,6 +58,7 @@ def sample_member1(client, app):
 
 @pytest.fixture
 def sample_member2(client, app):
+    """Return member2 tuple (user_id, token), creating user if needed."""
     sample_member2_exists = (get_user_by_email("member2@example.com") is not None)
 
     response = client.post("/auth/register", json ={
@@ -75,8 +84,8 @@ def sample_member2(client, app):
 #########################################################
 # tests for POST method for 'bookings' endpoint
 
-# correct fields
 def test_make_booking_correct_fields(client, sample_class, sample_member1, sample_member2):
+    """Booking succeeds for an authenticated member and valid class."""
     
     m1_uid, m1_token = sample_member1
     m2_uid, m2_token = sample_member2
@@ -89,8 +98,8 @@ def test_make_booking_correct_fields(client, sample_class, sample_member1, sampl
     }, headers={"Authorization": f"Bearer {m1_token}"})
     assert response.status_code == HTTPStatus.CREATED
 
-# incorrect fields
 def test_make_booking_incorrect_fields(client, sample_class, sample_member1, sample_member2, app):
+    """Booking endpoint returns expected errors for invalid scenarios."""
 
     m1_uid, m1_token = sample_member1
     m2_uid, m2_token = sample_member2
@@ -130,8 +139,8 @@ def test_make_booking_incorrect_fields(client, sample_class, sample_member1, sam
     }, headers={"Authorization": f"Bearer {m1_token}"})
     assert response.status_code == HTTPStatus.NOT_FOUND and response.json[MSG] == "Class not found"
 
-# correct fields (view booking list)
 def test_view_booking_list_correct_fields(client, sample_class, trainer_headers):
+    """Trainer can retrieve booking list for a valid class id."""
     
     response = client.get(f"/bookings/class/{sample_class}", headers=trainer_headers)
     assert response.status_code == HTTPStatus.OK

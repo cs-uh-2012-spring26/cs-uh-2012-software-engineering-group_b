@@ -1,6 +1,7 @@
 -r requirements.txt
 flake8==7.3.0
 pytest==8.4.1
+pytest-mock==3.14.0
 pytest-cov==6.2.1
 pytest-mongodb==2.4.0
 mongomock==4.3.0

@@ -278,7 +278,7 @@ Guest, Member, Trainer, Admin
 
 ---
 
-# Use Case 8: Send Email Reminder
+# Use Case 7: Send Email Reminder
 
 ## Use Case Name
 
@@ -310,8 +310,6 @@ Trainer
   System returns 403 Forbidden.
 * **Class Not Found:**
   System returns 404 Not Found.
-* **Class Already Occurred:**
-  System returns an error indicating that reminders can only be sent before a class takes place.
 * **No Attendees Booked:**
   System returns a message indicating no emails were sent because the booking list is empty.
 
