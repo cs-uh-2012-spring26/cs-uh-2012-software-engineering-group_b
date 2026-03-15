@@ -13,19 +13,10 @@ from app.services import email_reminders as svc
 
 
 class _FakeResponse:
-    """Small context-manager-compatible fake for urlopen responses."""
+    """Small fake for SendGrid SDK responses."""
 
     def __init__(self, status: int):
-        self.status = status
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return False
-
-    def getcode(self):
-        return self.status
+        self.status_code = status
 
 
 def test_build_reminder_message_uses_class_fields():
@@ -66,8 +57,10 @@ def test_normalize_recipients_deduplicates_and_sorts():
 
 
 def test_sendgrid_send_email_success(mocker):
-    """SendGrid helper should call urlopen once for successful send."""
-    mocked_urlopen = mocker.patch("app.services.email_reminders.urlopen", return_value=_FakeResponse(202))
+    """SendGrid helper should call SDK client once for successful send."""
+    mocked_client_cls = mocker.patch("app.services.email_reminders.SendGridAPIClient")
+    mocked_client = mocked_client_cls.return_value
+    mocked_client.send.return_value = _FakeResponse(202)
 
     svc._sendgrid_send_email(
         api_key="SG.fake",
@@ -77,12 +70,15 @@ def test_sendgrid_send_email_success(mocker):
         body="Body",
     )
 
-    mocked_urlopen.assert_called_once()
+    mocked_client_cls.assert_called_once_with("SG.fake")
+    mocked_client.send.assert_called_once()
 
 
 def test_sendgrid_send_email_rejected_status(mocker):
     """Non-accepted HTTP status from SendGrid should raise runtime error."""
-    mocker.patch("app.services.email_reminders.urlopen", return_value=_FakeResponse(500))
+    mocked_client_cls = mocker.patch("app.services.email_reminders.SendGridAPIClient")
+    mocked_client = mocked_client_cls.return_value
+    mocked_client.send.return_value = _FakeResponse(500)
 
     with pytest.raises(RuntimeError, match="SendGrid rejected email with status 500"):
         svc._sendgrid_send_email(
