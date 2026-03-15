@@ -8,7 +8,9 @@ from app import create_app
 @pytest.fixture(scope="session", autouse=True)
 def app():
     load_dotenv()
-    app = create_app()
+    app = create_app({
+        "MOCK_DB": True 
+    })
     yield app
 
 
