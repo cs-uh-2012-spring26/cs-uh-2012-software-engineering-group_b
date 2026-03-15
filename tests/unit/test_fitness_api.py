@@ -1,3 +1,11 @@
+"""Unit tests for the classes namespace.
+
+Coverage focus:
+- class creation validation,
+- reminder endpoint behavior,
+- expected success and failure responses.
+"""
+
 from http import HTTPStatus
 from uuid import uuid4
 
@@ -7,10 +15,8 @@ from app.db.bookings import build_booking_document, create_booking
 from app.db.fitness_classes import CAPACITY, DATETIME, TITLE, TRAINER_NAME
 from app.db.fitness_classes import CLASS_ID, build_fitness_class_document, create_fitness_class
 
-# tests for POST method for 'classes' endpoint
-
-# valid object passed
 def test_add_fitness_class_correct_fields(client, trainer_headers):
+    """Create class succeeds when required fields are valid."""
     response = client.post("/classes/", json = {
         TITLE: "Morning Yoga",
         DATETIME: "2036-02-20T09:00:00Z",
@@ -20,7 +26,8 @@ def test_add_fitness_class_correct_fields(client, trainer_headers):
     assert response.status_code == HTTPStatus.CREATED
 
 
-def test_send_class_reminders_success(client, trainer_headers, monkeypatch):
+def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mocker):
+    """Trainer can send reminders to booked attendees before class start."""
     monkeypatch.setenv("SENDGRID_FROM_EMAIL", "noreply@coachly.dev")
 
     class_id = f"class_{uuid4()}"
@@ -45,27 +52,25 @@ def test_send_class_reminders_success(client, trainer_headers, monkeypatch):
         )
     )
 
-    called = {}
-
-    def _fake_send_class_reminders(recipient_emails, fitness_class, sender_email):
-        called["recipient_emails"] = recipient_emails
-        called["fitness_class"] = fitness_class
-        called["sender_email"] = sender_email
-        return {"sent_count": len(recipient_emails), "recipients": recipient_emails}
-
-    monkeypatch.setattr("app.apis.fitness_class.send_class_reminders", _fake_send_class_reminders)
+    mocked_send = mocker.patch(
+        "app.apis.fitness_class.send_class_reminders",
+        return_value={"sent_count": 1, "recipients": ["jane.member@example.com"]},
+    )
 
     response = client.post(f"/classes/{class_id}/reminders", headers=trainer_headers)
 
     assert response.status_code == HTTPStatus.OK
     assert response.get_json()["sent_count"] == 1
     assert response.get_json()[MSG] == "Reminder emails sent"
-    assert called["sender_email"] == "noreply@coachly.dev"
-    assert called["recipient_emails"] == ["jane.member@example.com"]
-    assert called["fitness_class"][CLASS_ID] == fitness_class[CLASS_ID]
+    mocked_send.assert_called_once()
+    called_kwargs = mocked_send.call_args.kwargs
+    assert called_kwargs["sender_email"] == "noreply@coachly.dev"
+    assert called_kwargs["recipient_emails"] == ["jane.member@example.com"]
+    assert called_kwargs["fitness_class"][CLASS_ID] == fitness_class[CLASS_ID]
 
 
 def test_send_class_reminders_no_attendees(client, trainer_headers):
+    """Reminder request fails when class has no bookings."""
     class_id = f"class_{uuid4()}"
     create_fitness_class(
         build_fitness_class_document(
@@ -84,6 +89,7 @@ def test_send_class_reminders_no_attendees(client, trainer_headers):
 
 
 def test_send_class_reminders_class_not_found(client, trainer_headers):
+    """Reminder request returns not found for unknown class id."""
     response = client.post(f"/classes/class_{uuid4()}/reminders", headers=trainer_headers)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -91,6 +97,7 @@ def test_send_class_reminders_class_not_found(client, trainer_headers):
 
 
 def test_send_class_reminders_past_class(client, trainer_headers):
+    """Reminder request is rejected when class datetime is in the past."""
     class_id = f"class_{uuid4()}"
     create_fitness_class(
         build_fitness_class_document(
@@ -107,8 +114,8 @@ def test_send_class_reminders_past_class(client, trainer_headers):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.get_json()[MSG] == "Reminders can only be sent before the class starts"
 
-# missing required field
 def test_add_fitness_class_missing_field(client, trainer_headers):
+    """Class creation rejects missing/invalid values for required inputs."""
     # missing title
     response = client.post("/classes/", json = {
         DATETIME: "2036-02-20T09:00:00Z",

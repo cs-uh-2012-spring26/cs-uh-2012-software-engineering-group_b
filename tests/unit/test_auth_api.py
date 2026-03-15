@@ -1,3 +1,10 @@
+"""Unit tests for authentication and authorization flows.
+
+This module covers:
+- register/login/validate-token endpoint behavior,
+- permission enforcement through role-based decorators.
+"""
+
 # internal imports
 from app.db.users import get_user_by_user_id, get_user_by_email
 from app.apis import MSG
@@ -11,6 +18,7 @@ from flask_jwt_extended import create_access_token
 # create a sample member specifically for testing within the auth endpoint
 @pytest.fixture()
 def sample_member_auth(client):
+    """Return a reusable member tuple (user_id, known_password)."""
     sample_member_exists = (get_user_by_email("auth_member@example.com") is not None)
     
     response = client.post("/auth/register", json ={
@@ -32,8 +40,8 @@ def sample_member_auth(client):
 #########################################################
 # tests for POST method for 'auth' endpoints
 
-# wrong fields (register)
 def test_register_wrong_fields(client, sample_member_auth):
+    """Register endpoint rejects duplicate email and duplicate phone."""
     
     sample_member_auth
     
@@ -57,8 +65,8 @@ def test_register_wrong_fields(client, sample_member_auth):
     })
     assert response.status_code == HTTPStatus.CONFLICT and response.json[MSG] == "Phone already registered"
 
-# correct fields (login)
 def test_login_correct_fields(client, sample_member_auth):
+    """Login succeeds with correct credentials for existing user."""
     
     m_uid, m_pwd = sample_member_auth
     m_email = get_user_by_user_id(m_uid)["email"]
@@ -69,8 +77,8 @@ def test_login_correct_fields(client, sample_member_auth):
     })
     assert response.status_code == HTTPStatus.OK
 
-# wrong fields (login)
 def test_login_wrong_fields(client, sample_member_auth):
+    """Login endpoint returns errors for missing/wrong credentials."""
     
     m_uid, m_pwd = sample_member_auth
     m_email = get_user_by_user_id(m_uid)["email"]
@@ -94,24 +102,24 @@ def test_login_wrong_fields(client, sample_member_auth):
     })
     assert response.status_code == HTTPStatus.BAD_REQUEST and response.json[MSG] == "Login credentials and password do not match"
 
-# correct fields (validate-token)
 def test_validate_token_correct_fields(client):
+    """Validate-token endpoint returns success for known valid token."""
 
     response = client.post("/auth/validate-token", json = {
         "token": "trainer-secret-123"
     })
     assert response.status_code == HTTPStatus.OK and response.json["valid"] == True
 
-# wrong fields (validate-token)
 def test_validate_token_wrong_fields(client):
+    """Validate-token endpoint rejects unknown tokens."""
 
     response = client.post("/auth/validate-token", json = {
         "token": "fake token"
     })
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
-# wrong authorization (decorators + POST to /classes/)
 def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
+    """Class creation endpoint denies missing, invalid, and unauthorized JWTs."""
 
     m_uid, m_pwd = sample_member_auth
 
