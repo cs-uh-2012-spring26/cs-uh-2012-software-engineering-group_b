@@ -2,7 +2,28 @@
 
 # Fitness Class Management System API
 
-This repo contains a Flask-RESTX API foundation for the Sprint 1 Fitness Class Management System.
+This repo contains a Flask-RESTX API foundation for the Sprint 2 Fitness Class Management System.
+
+## Recent Updates
+
+### 1) CI implementation (GitHub Actions)
+
+- A CI workflow is configured and published via the repository badge at the top of this README.
+- On each push/PR, the pipeline validates the project by installing dependencies and running automated checks.
+- This gives quick feedback on regressions and keeps the default branch stable.
+
+### 2) Email reminder sending with SendGrid SDK
+
+- Reminder delivery now uses the official SendGrid Python SDK (`sendgrid`) for outbound emails.
+- The reminder service builds class-based reminder content and sends one email per recipient with deterministic recipient normalization.
+- Required environment variable: `SENDGRID_API_KEY`.
+- Optional environment variable: `SENDGRID_FROM_EMAIL` (defaults to `noreply@coachly.dev` when not provided).
+
+### 3) Unit testing updates
+
+- Added/updated unit tests for the email reminder service flow in `tests/unit/test_email_reminders_service.py`.
+- Tests cover message building, recipient normalization, API key validation, successful sends, rejected SendGrid statuses, and wrapped transport errors.
+- Test doubles now mock SendGrid SDK client behavior for deterministic service-level tests.
 
 Current scaffolded features:
 
@@ -25,6 +46,9 @@ to install MongoDB locally. Select the right link for your operating system.
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml                # CI pipeline for automated checks on push/PR
 ├── app/
 │   ├── __init__.py                # Flask app factory and namespace registration
 │   ├── config.py                  # Environment-driven app config
@@ -41,6 +65,9 @@ to install MongoDB locally. Select the right link for your operating system.
 │       ├── fitness_classes.py     # Fitness class collection/fields
 │       ├── users.py               # User collection/role field definitions
 │       └── utils.py               # Serialization helpers
+│   └── services/
+│       ├── __init__.py
+│       └── email_reminders.py     # SendGrid-based reminder email orchestration
 ├── docs/
 ├── reports/                       # Requirements/spec artifacts
 ├── tests/
@@ -50,7 +77,9 @@ to install MongoDB locally. Select the right link for your operating system.
 │   │   ├── conftest.py            # Pytest fixtures
 │   │   ├── test_auth_api.py       # Auth endpoint tests
 │   │   ├── test_booking_api.py    # Booking endpoint tests
-│   │   └── test_fitness_api.py    # Fitness class endpoint tests
+│   │   ├── test_email_reminders_service.py  # Email reminder service unit tests
+│   │   ├── test_fitness_api.py    # Fitness class endpoint tests
+│   │   └── test_general.py        # General API sanity and behavior tests
 │   └── utils.py                   # Testing utilities
 ├── makefile
 ├── requirements.txt
@@ -69,6 +98,11 @@ This Flask web app uses:
 (see [flask specific testing instructions on pytest][pytest-flask]
 for more info specific to testing Flask applications)
 - [mongomock][mongomock] for mocking the mongodb during unit testing
+- [SendGrid Python SDK][sendgrid-sdk] for reminder email delivery
+- [requests][requests-docs] for HTTP client integrations/utilities
+- [pytest-mock][pytest-mock] for clean mocking patterns in unit tests
+- [pytest-cov][pytest-cov] for coverage reporting
+- [GitHub Actions][gha] for CI automation
 
 [flask-restx]: https://flask-restx.readthedocs.io/en/latest/quickstart.html
 [flask-restx-scaling]: https://flask-restx.readthedocs.io/en/latest/scaling.html
@@ -77,6 +111,11 @@ for more info specific to testing Flask applications)
 [pytest]: https://docs.pytest.org/en/stable/
 [pytest-flask]: https://flask.palletsprojects.com/en/stable/testing/
 [mongomock]: https://docs.mongoengine.org/guide/mongomock.html
+[sendgrid-sdk]: https://github.com/sendgrid/sendgrid-python
+[requests-docs]: https://requests.readthedocs.io/en/latest/
+[pytest-mock]: https://pytest-mock.readthedocs.io/
+[pytest-cov]: https://pytest-cov.readthedocs.io/
+[gha]: https://docs.github.com/actions
 
 ## Running Locally
 
@@ -103,6 +142,10 @@ You can use `ctrl-c` to stop the server.
 Run `make tests` to execute the test suite and see the coverage report
 in your terminal. You can also see a visual report by viewing
 [/htmlcov/index.html](/htmlcov/index.html) in your browser.
+
+For targeted unit testing during development, you can run specific files such as:
+
+- `pytest tests/unit/test_email_reminders_service.py -q`
 
 ## Current API Endpoints
 

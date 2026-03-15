@@ -1,7 +1,7 @@
-import json
 from os import environ
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+
+from sendgrid import SendGridAPIClient  # pyright: ignore[reportMissingImports]
+from sendgrid.helpers.mail import Content, From, Mail, To  # pyright: ignore[reportMissingImports]
 
 from app.db.fitness_classes import DATETIME, TITLE, TRAINER_NAME
 
@@ -44,28 +44,18 @@ def _resolve_sender_email(sender_email: str | None) -> str:
 
 
 def _sendgrid_send_email(api_key: str, sender_email: str, recipient_email: str, subject: str, body: str) -> None:
-    """Send one email via SendGrid Mail Send API."""
-    payload = {
-        "personalizations": [{"to": [{"email": recipient_email}]}],
-        "from": {"email": sender_email},
-        "subject": subject,
-        "content": [{"type": "text/plain", "value": body}],
-    }
-
-    request = Request(
-        "https://api.sendgrid.com/v3/mail/send",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
+    """Send one email via SendGrid SDK."""
+    message = Mail(
+        from_email=From(sender_email),
+        to_emails=To(recipient_email),
+        subject=subject,
+        plain_text_content=Content("text/plain", body),
     )
 
-    with urlopen(request, timeout=20) as response:  # nosec B310 - controlled SendGrid API URL
-        status_code = getattr(response, "status", response.getcode())
-        if status_code not in (200, 202):
-            raise RuntimeError(f"SendGrid rejected email with status {status_code}")
+    response = SendGridAPIClient(api_key).send(message)
+    status_code = getattr(response, "status_code", None)
+    if status_code not in (200, 202):
+        raise RuntimeError(f"SendGrid rejected email with status {status_code}")
 
 
 def send_class_reminders(
@@ -92,7 +82,7 @@ def send_class_reminders(
             _sendgrid_send_email(api_key, sender, recipient, subject, body)
             sent_count += 1
             sent_recipients.append(recipient)
-    except (HTTPError, URLError) as exc:
+    except Exception as exc:
         raise RuntimeError(f"Unable to send reminder email(s): {exc}") from exc
 
     return {"sent_count": sent_count, "recipients": sent_recipients}
