@@ -51,6 +51,18 @@ def get_class_by_class_id(class_id: str) -> dict | None:
 	return serialize_item(fitness_class)
 
 
+def class_exists(title: str, dt: str, trainer_name: str) -> bool:
+	"""Return True when a class with the same title, datetime, and trainer already exists."""
+	fitness_class = _collection().find_one(
+		{
+			TITLE: title,
+			DATETIME: dt,
+			TRAINER_NAME: trainer_name,
+		}
+	)
+	return fitness_class is not None
+
+
 def decrement_available_spot(class_id: str) -> bool:
 	"""Decrement `available_spots` by 1 only when spots are still available."""
 	update_result = _collection().update_one(
