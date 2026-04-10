@@ -9,7 +9,7 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 | Team Member | Responsibilities |
 |-------------|-----------------|
 | [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary |
-| [Name]      | e.g., Sequence diagrams, Task 2 violations 3–5, Task 3 smells 3–5 |
+| [Juan Diego]      | Task 3 Identify Code Smells in Your Source Code and Tests |
 | [Name]      | e.g., Task 4 reflection, report formatting, review |
 
 ---
@@ -132,78 +132,78 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 
 ---
 
-### Code Smell 1 — [Smell Name]
+### Code Smell 1 — Long Method
 
-**Smell:** [e.g., Long Method, God Class, Duplicate Code, Feature Envy, etc.]  
-**File:** `path/to/file.py`  
-**Lines:** [e.g., 101–145]  
-**Method/Class:** `method_or_class_name()`
+**Smell:** Long Method, God Class  
+**File:** `app/apis/fitness_class.py`  
+**Lines:** 91-144  
+**Method/Class:** `ClassListResource.post()`
 
 **Screenshot:**
-> _[Insert screenshot]_
+![Code Smell 1](images/code_smell_1.png)
 
 **Explanation:**
-> _Explain why this qualifies as the stated code smell._
+> The `post()` method handles many responsibilities in one place: payload extraction, validation, datetime parsing, business rule checks (past date and duplicates), response construction, and persistence. This increases cognitive load and makes future feature additions (e.g., recurring classes) harder to implement safely.
 
 ---
 
-### Code Smell 2 — [Smell Name]
+### Code Smell 2 — Duplicate Code
 
-**Smell:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Smell:** Duplicate Code  
+**File:** `tests/unit/test_booking_api.py`  
+**Lines:** 36-57 and 60-81  
+**Method/Class:** `sample_member1()` and `sample_member2()` fixtures
 
 **Screenshot:**
-> _[Insert screenshot]_
+![Code Smell 2](images/code_smell_2.png)
 
 **Explanation:**
-> _[Your explanation]_
+> Both fixtures repeat almost the same registration and token fallback logic with only small literal changes (email/phone/password/name). This duplication makes test maintenance harder and increases the chance of inconsistent behavior when the auth flow changes.
 
 ---
 
-### Code Smell 3 — [Smell Name]
+### Code Smell 3 — Dead Code (Unused Import)
 
-**Smell:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Smell:** Dead Code / Unused Import  
+**File:** `app/apis/booking.py`  
+**Lines:** 25-34 (specifically line 33)  
+**Method/Class:** module-level imports
 
 **Screenshot:**
-> _[Insert screenshot]_
+![Code Smell 3](images/code_smell_3.png)
 
 **Explanation:**
-> _[Your explanation]_
+> `get_user_by_user_id` is imported but never used in this module. Unused imports are a maintainability smell because they add noise, can mislead readers about dependencies, and often indicate leftover code from previous refactors.
 
 ---
 
-### Code Smell 4 — [Smell Name]
+### Code Smell 4 — Long Parameter List
 
-**Smell:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Smell:** Long Parameter List  
+**File:** `app/db/bookings.py`  
+**Lines:** 37-48  
+**Method/Class:** `build_booking_document()`
 
 **Screenshot:**
-> _[Insert screenshot]_
+![Code Smell 4](images/code_smell_4.png)
 
 **Explanation:**
-> _[Your explanation]_
+> `build_booking_document()` takes many primitive parameters (`class_id`, `user_id`, `user_name`, `user_email`, `phone`, `role`, plus optional fields). This is a long parameter list smell because it increases call-site complexity and makes argument ordering/consistency errors more likely as the booking model evolves.
 
 ---
 
-### Code Smell 5 — [Smell Name]
+### Code Smell 5 — Primitive Obsession
 
-**Smell:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Smell:** Primitive Obsession  
+**File:** `app/db/bookings.py`  
+**Lines:** 13-25 and 37-62  
+**Method/Class:** `build_booking_document()`
 
 **Screenshot:**
-> _[Insert screenshot]_
+![Code Smell 5](images/code_smell_5.png)
 
 **Explanation:**
-> _[Your explanation]_
+> Booking domain concepts are represented as raw primitives (multiple strings for `role`, `status`, `user_email`, `class_id`, etc.) instead of richer domain types or value objects. This makes invalid states easier to pass around and spreads format/validation concerns across the codebase.
 
 ---
 
