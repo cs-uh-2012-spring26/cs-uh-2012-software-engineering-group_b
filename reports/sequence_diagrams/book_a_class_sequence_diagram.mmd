@@ -1,0 +1,108 @@
+sequenceDiagram
+    autonumber
+    
+    actor Client
+    participant API as BookingResource.post()
+    participant JWT as flask_jwt_extended
+    participant Users as users.py
+    participant Classes as fitness_classes.py
+    participant Bookings as bookings.py
+    participant DBClass as DB (__init__.py)
+    participant Utils as utils.py
+    participant Mongo as MongoDB
+
+    Client->>+API: POST /bookings/ (JSON: class_id, user_email)
+    
+    %% Step 1: Authentication
+    API->>+JWT: get_jwt_identity()
+    JWT-->>-API: token_user_email
+
+    %% Step 2: Email Identity Validation
+    break when JSON user_email != token_user_email
+        API-->>Client: 403 Forbidden ("Email does not match authenticated user")
+    end
+
+    %% Step 3: Fetch User
+    API->>+Users: get_user_by_email(token_user_email)
+    Users->>+DBClass: get_collection(USER_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Users: Collection
+    Users->>+Mongo: find_one({email})
+    Mongo-->>-Users: user_document
+    
+    Users->>+Utils: serialize_item(user_document)
+    Utils->>Utils: serialize_oid(item[ID])
+    Utils-->>-Users: serialized user_dict
+    Users-->>-API: user_dict
+
+    break when user_dict is None
+        API-->>Client: 404 Not Found ("User not found")
+    end
+
+    %% Step 4: Fetch Class & Validate
+    API->>+Classes: get_class_by_class_id(class_id)
+    Classes->>+DBClass: get_collection(FITNESS_CLASS_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Classes: Collection
+    Classes->>+Mongo: find_one({class_id})
+    Mongo-->>-Classes: class_document
+    
+    Classes->>+Utils: serialize_item(class_document)
+    Utils->>Utils: serialize_oid(item[ID])
+    Utils-->>-Classes: serialized class_dict
+    Classes-->>-API: class_dict
+
+    break when fitness_class is None
+        API-->>Client: 404 Not Found ("Class not found")
+    end
+
+    %% Step 5: Role Validation (Shifted position based on new code)
+    break when user.get(USER_ROLE_FIELD) != ROLE_MEMBER
+        API-->>Client: 403 Forbidden ("Only members can book classes")
+    end
+
+    %% Step 6: Duplicate Booking Check
+    API->>+Bookings: booking_exists_for_user(user_id, class_id)
+    Bookings->>+DBClass: get_collection(BOOKING_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Bookings: Collection
+    Bookings->>+Mongo: find_one({user_id, class_id})
+    Mongo-->>-Bookings: None (Not booked yet)
+    Bookings-->>-API: False
+
+    break when booking_exists == True
+        API-->>Client: 400 Bad Request
+    end
+
+    %% Step 7: Construct Document
+    API->>+Bookings: build_booking_document(class_id, user_id, user_name, user_email, phone, role)
+    Bookings-->>-API: booking_doc (dict)
+
+    %% Step 8: Decrement Capacity (Atomic Update)
+    API->>+Classes: decrement_available_spot(class_id)
+    Classes->>+DBClass: get_collection(FITNESS_CLASS_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Classes: Collection
+    Classes->>+Mongo: update_one({$inc: {available_spots: -1}})
+    Mongo-->>-Classes: modified_count = 1
+    Classes-->>-API: True
+
+    break when modified_count == 0
+        API-->>Client: 409 Conflict ("Class is full")
+    end
+
+    %% Step 9: Database Insertion & Final Serialization
+    API->>+Bookings: create_booking(booking_doc)
+    Bookings->>+DBClass: get_collection(BOOKING_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Bookings: Collection
+    Bookings->>+Mongo: insert_one(booking_doc)
+    Mongo-->>-Bookings: inserted_id
+    
+    Bookings->>+Utils: serialize_item(booking_doc)
+    Utils->>Utils: serialize_oid(item[ID])
+    Utils-->>-Bookings: serialized_booking
+    Bookings-->>-API: serialized_booking
+
+    %% Step 10: Return Success
+    API-->>-Client: 201 Created {MSG: booking}
