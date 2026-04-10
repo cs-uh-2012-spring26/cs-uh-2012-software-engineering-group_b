@@ -4,16 +4,13 @@
 
 ## Executive Summary
 
-> _Describe how your team approached this deliverable. Include:_
-> - _Tools used (e.g., pyreverse, VS PyReverseSequence Plugin, SonarQube — or state "none" if no tools were used)_
-> - _Manual analysis performed and how it was divided_
-> - _Each team member's responsibilities_
+To ensure our UML diagrams accurately reflected the system architecture while remaining accessible for technical documentation we adopted a hybrid approach utilizing automated reverse engineering tools followed by manual refinement. For the class diagram we used pyreverse to extract foundational class dependencies from the python codebase and then imported the resulting .dot file into GraphvizOnline to manually clean up dependency edges and logically group our API, Service, and Database layers. Similarly for the sequence diagram we leveraged the PyReverseSequence plugin in VSCode to trace the exact python call stack into base Mermaid syntax. We then ported these raw fragments into the Mermaid Web Editor where we manually injected necessary HTTP boundaries, Client actors, and critical validation gates (such as break and alt blocks) to accurately capture the system's error handling and external service integrations.
 
 | Team Member | Responsibilities |
 |-------------|-----------------|
-| [Tianze]    | [Task 1 creating the class diagrams and sequence diagrams and detailing the executive summary] |
-| [Name]      | [e.g., Sequence diagrams, Task 2 violations 3–5, Task 3 smells 3–5] |
-| [Name]      | [e.g., Task 4 reflection, report formatting, review] |
+| [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary |
+| [Name]      | e.g., Sequence diagrams, Task 2 violations 3–5, Task 3 smells 3–5 |
+| [Name]      | e.g., Task 4 reflection, report formatting, review |
 
 ---
 
@@ -21,40 +18,30 @@
 
 ### 1.1 Class Diagram
 
-> _Insert your class diagram here. Show all main classes and their associations (inheritance, composition, aggregation, dependency, etc.). Refine any auto-generated output so it is readable and meaningful._
-
-```
-[Insert class diagram image or PlantUML/Mermaid source here]
-```
+![Class diagram](class_diagrams\class_diagram.svg)
 
 **Notes and descriptions with key design decisions:**
-> _Briefly explain any non-obvious associations or design choices shown in the diagram._
+> This class digram shows the API resources (such as BookingResource and ClassReminderResource) act as controllers that depend on pure function calls (like create_booking()) from the database modules (users, fitness_classes, bookings) rather than using a traditional Object-Oriented ORM. The core data models share standard 1 to 0..n associations, indicating that the independent user and fitness class collections are linked to multiple individual bookings via ID references rather than nested composition. A notable design choice is the decoupling of external integrations instead of sending emails directly the ClassReminderResource delegates the attendee data to the EmailReminderService, which independently manages the external HTTP calls to the SendGridAPI ensuring the core API routing logic remains safely isolated from third-party network dependencies.
 
 ---
 
 ### 1.2 Sequence Diagram — Book a Class Endpoint
 
-> _Insert a sequence diagram capturing the current control flow for the "book a class" endpoint. Include all relevant actors, objects, and method calls._
 
-```
-[Insert sequence diagram image or PlantUML/Mermaid source here]
-```
+![Book a class sequence diagram](sequence_diagrams\book_a_class_sequence_diagram.png)
+
 
 **Notes and descriptions:**
-> _Briefly describe the flow shown and highlight anything noteworthy._
+> The sequence diagram illustrates the end-to-end execution flow for booking a fitness class, triggered when a Client sends a POST request to the API. The process begins with JWT authentication and proceeds through a series of strict validation gates which clearly modeled using break fragments and will immediately return HTTP error codes (403, 404, 400) if the user identity mismatches, entities are missing, the user lacks member privileges, or a duplicate booking is found. Once these guardrails are cleared, the API constructs the booking document and executes a noteworthy concurrency safe atomic database update to decrement the class's available spots, returning a 409 Conflict if the class is already full. This ensures that the final MongoDB insertion step only occurs when all business rules and capacity constraints are definitively satisfied, ultimately culminating in a 201 Created success response to the Client.
 
 ---
 
 ### 1.3 Sequence Diagram — Send Reminders Endpoint
 
-> _Insert a sequence diagram capturing the current control flow for the "send reminders" endpoint. Include all relevant actors, objects, and method calls._
-
-```
-[Insert sequence diagram image or PlantUML/Mermaid source here]
-```
+![Send class reminder sequence diagram](sequence_diagrams\send_email_reminder_sequence_diagram.png)
 
 **Notes and descriptions:**
-> _Briefly describe the flow shown and highlight anything noteworthy._
+> This sequence diagram outlines the execution path for a trainer initiating class reminders starting with role based authorization and proceeding through sequential database queries to fetch class details and attendee bookings. this flow will trigger break fragments that immediately halt execution and return HTTP errors if the class is missing, scheduled in the past, or lacks attendees. Once the data is validated and deduplicated the API deliberately delegates the notification logic to a dedicated email service layer. This will have the service construct the message and loop through unique recipients to dispatch external requests to the SendGrid API. Furthermore the diagram uses a final alt block to ensure that if the external SendGrid network call fails, the system safely catches the exception and returns a 502 Bad Gateway rather than crashing the application.
 
 ---
 

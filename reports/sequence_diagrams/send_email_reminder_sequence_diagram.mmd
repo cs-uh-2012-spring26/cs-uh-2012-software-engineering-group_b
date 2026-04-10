@@ -1,0 +1,88 @@
+sequenceDiagram
+    autonumber
+    
+    actor Client
+    participant API as ClassReminderResource.post()
+    participant Auth as decorators.py
+    participant Classes as fitness_classes.py
+    participant Bookings as bookings.py
+    participant DBClass as DB (__init__.py)
+    participant Utils as utils.py
+    participant Mongo as MongoDB
+    participant Email as email_reminders.py
+    participant SendGrid as SendGrid API
+
+    Client->>+API: POST /classes/{class_id}/reminders
+    
+    %% Step 1: Authentication & Authorization
+    API->>+Auth: require_roles(["trainer"])
+    Auth-->>-API: authorized (True)
+
+    %% Step 2: Fetch Class & Validate
+    API->>+Classes: get_class_by_class_id(class_id)
+    Classes->>+DBClass: get_collection(FITNESS_CLASS_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Classes: Collection
+    Classes->>+Mongo: find_one({CLASS_ID: class_id})
+    Mongo-->>-Classes: class_document
+    
+    Classes->>+Utils: serialize_item(class_document)
+    Utils->>Utils: serialize_oid(item[ID])
+    Utils-->>-Classes: serialized class_dict
+    Classes-->>-API: fitness_class (dict)
+
+    break when fitness_class is None
+        API-->>Client: 404 Not Found ("Class not found")
+    end
+
+    %% Step 3: Datetime Validations
+    break when datetime parsing fails
+        API-->>Client: 400 Bad Request ("Invalid datetime format")
+    end
+
+    break when class_dt <= now
+        API-->>Client: 400 Bad Request ("Reminders can only be sent before the class starts")
+    end
+
+    %% Step 4: Fetch Bookings
+    API->>+Bookings: list_bookings_by_class(class_id)
+    Bookings->>+DBClass: get_collection(BOOKING_COLLECTION)
+    DBClass->>DBClass: _get()
+    DBClass-->>-Bookings: Collection
+    Bookings->>+Mongo: find({CLASS_ID: class_id})
+    Mongo-->>-Bookings: Cursor (bookings)
+    
+    Bookings->>+Utils: serialize_items(bookings)
+    Utils->>Utils: loop serialize_item(item)
+    Utils-->>-Bookings: serialized_bookings_list
+    Bookings-->>-API: bookings
+
+    %% Step 5: Data Cleaning & Validation
+    API->>API: Extract & deduplicate recipient_emails
+    
+    break when not recipient_emails
+        API-->>Client: 400 Bad Request ("No attendees found for this class")
+    end
+
+    %% Step 6: Delegate to Service Layer (WITH RAW CODE PARAMETERS)
+    API->>+Email: send_class_reminders(recipient_emails=recipient_emails, fitness_class=fitness_class, sender_email=environ.get("SENDGRID_FROM_EMAIL") or "noreply@coachly.dev")
+    Email->>Email: _normalize_recipients(recipient_emails)
+    Email->>Email: _sendgrid_api_key()
+    Email->>Email: _resolve_sender_email(sender_email)
+    Email->>Email: _build_reminder_message(fitness_class)
+    
+    loop for recipient in unique_recipients
+        Email->>+Email: _sendgrid_send_email(api_key, sender, recipient, subject, body)
+        Email->>+SendGrid: POST /v3/mail/send
+        SendGrid-->>-Email: 202 Accepted
+        Email-->>-Email: success
+    end
+    
+    Email-->>-API: send_result (dict)
+
+    %% Step 7: Handle External Failures
+    alt Exception raised during email dispatch
+        API-->>Client: 502 Bad Gateway ("Failed to send reminder emails...")
+    else Success
+        API-->>-Client: 200 OK {MSG: "Reminder emails sent", sent_count}
+    end
