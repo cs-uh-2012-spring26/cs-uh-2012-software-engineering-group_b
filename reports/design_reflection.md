@@ -8,7 +8,7 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 
 | Team Member | Responsibilities |
 |-------------|-----------------|
-| [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary |
+| [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary and exploring and documneting new feature foresee for task 4 |
 | [Name]      | e.g., Sequence diagrams, Task 2 violations 3–5, Task 3 smells 3–5 |
 | [Name]      | e.g., Task 4 reflection, report formatting, review |
 
@@ -221,29 +221,29 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 ### 4.1 Feature 6 — Create Recurring Class
 
 **How does the current design help?**
-> _[Describe any existing abstractions, patterns, or structures that would make this easier to implement.]_
+> Our current modular database layer isolates data construction from persistence. Because we have pure functions like build_fitness_class_document() and generate_fitness_class_id() in fitness_classes.py, programmatically generating multiple instances of a class for future dates will be straightforward without needing to duplicate raw dictionary creation logic.
 
 **How does the current design hinder?**
-> _[Reference specific violations or smells from Tasks 2 & 3 that would make this harder. Discuss maintainability/extensibility concerns.]_
+>The current database schema is entirely flat and treats every fitness class as a standalone entity. There is no concept of a "Series" or "Template" which relates to poor abstraction. so if a trainer creates a daily class for a month and then needs to change the time or cancel the series, they would have to update 30 independent documents. Furthermore, our current create_fitness_class function uses insert_one which means batch creation would require looping network calls which is inefficient and could fail mid-loop.
 
 **Initial thoughts on approach:**
-> _[High-level thoughts on how you might redesign or extend the system to support this feature cleanly — no implementation required.]_
+> We could modify the fitness_classes schema to include an optional series_id or recurrence_rule field to link recurring instances together. Alternatively we could also introduce a ClassTemplate entity. On the database layer we should introduce a bulk_create_fitness_classes() function utilizing MongoDB's insert_many for atomic efficient batch processing therefore solving the issue of having the ability to only create one class at a time.
 
 ---
 
 ### 4.2 Feature 7 — Configure Notifications
 
 **How does the current design help?**
-> _[Describe any existing abstractions, patterns, or structures that would make this easier to implement.]_
+> The current system already enforces a clean separation of concerns by delegating the actual dispatching of messages out of the API router and into a dedicated service layer (email_reminders.py). This prevents the controller from being bogged down with network logic.
 
 **How does the current design hinder?**
-> _[Reference specific violations or smells from Tasks 2 & 3 that would make this harder. Discuss maintainability/extensibility concerns.]_
+> The design heavily violates the Open Closed Principle and suffers from tight coupling. In ClassReminderResource.post(), the API explicitly iterates through bookings to extract specifically USER_EMAIL and passes it to an explicitly named send_class_reminders function. If we add SMS or Telegram, we will be forced to modify the API controller, the booking schema, and write entirely new conditional service logic. Our current service is also hardcoded specifically for SendGrid API data structures.
 
 **Initial thoughts on approach:**
-> _[High-level thoughts on how you might redesign or extend the system to support this feature cleanly — no implementation required.]_
+> First the users schema must be updated to store a notification_preferences field (e.g. {"email": true, "sms": false}). Second, we could implement the Strategy Design Pattern. We would create a generic NotificationManager interface that takes a user's preferences and dynamically delegates the payload to an EmailStrategy, SMSStrategy, or TelegramStrategy. The API endpoint would simply pass a list of user IDs to the manager entirely decoupling the API from the notification medium.
 
 ---
 
 ### 4.3 Summary
 
-> _Provide a brief overall summary of the team's key takeaways from this design analysis sprint, and what you would prioritise fixing before implementing the new features._
+> Overall, our current modular architecture successfully handles basic CRUD operations and enforces basic separation of concerns. However, our design analysis reveals that the system is highly rigid and tailored to a single, flat use case. The lack of relational abstractions (hindering recurring classes) and tight coupling to specific implementations like Email (violating the Open-Closed Principle) will make new features difficult to add safely. Before beginning Sprint 3B, our priority must be refactoring our service layer to use polymorphic design patterns (like Strategy) and extending our data models to support linked entities and user preferences.
