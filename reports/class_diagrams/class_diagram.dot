@@ -1,0 +1,68 @@
+digraph "classes_FitnessApp" {
+    rankdir=TB
+    charset="utf-8"
+    node [shape="record", style="solid", color="black", fontcolor="black", fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize="10", labeldistance="2.5"];
+
+    // --------------------------------------------------------
+    // API LAYER
+    // --------------------------------------------------------
+    "app.apis.auth.Register" [label=<{Register|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+    "app.apis.auth.Login" [label=<{Login|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+    
+    "app.apis.fitness_class.ClassListResource" [label=<{ClassListResource|<br ALIGN="LEFT"/>|get()<br ALIGN="LEFT"/>post()<br ALIGN="LEFT"/>}>];
+    "app.apis.fitness_class.ClassReminderResource" [label=<{ClassReminderResource|<br ALIGN="LEFT"/>|post(class_id: str)<br ALIGN="LEFT"/>}>];
+    
+    "app.apis.booking.BookingResource" [label=<{BookingResource|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+    "app.apis.booking.BookingListByClassResource" [label=<{BookingListByClassResource|<br ALIGN="LEFT"/>|get(class_id: str)<br ALIGN="LEFT"/>}>];
+
+    // --------------------------------------------------------
+    // SERVICE LAYER
+    // --------------------------------------------------------
+    "app.services.EmailReminderService" [label=<{email_reminders (Module)|<br ALIGN="LEFT"/>|send_class_reminders(recipient_emails, fitness_class, sender_email)<br ALIGN="LEFT"/>_build_reminder_message(fitness_class)<br ALIGN="LEFT"/>_sendgrid_api_key()<br ALIGN="LEFT"/>_sendgrid_send_email(...)<br ALIGN="LEFT"/>}>];
+
+    // --------------------------------------------------------
+    // DATABASE LAYER 
+    // --------------------------------------------------------
+    "app.db.users" [label=<{users (Module)|<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>NAME: str<br ALIGN="LEFT"/>EMAIL: str<br ALIGN="LEFT"/>PHONE: str<br ALIGN="LEFT"/>BIRTH_DATE: str<br ALIGN="LEFT"/>PASSWORD_HASH: str<br ALIGN="LEFT"/>ROLE: str<br ALIGN="LEFT"/>CREATED_AT: str<br ALIGN="LEFT"/>UPDATED_AT: str<br ALIGN="LEFT"/>|get_user_by_user_id(user_id)<br ALIGN="LEFT"/>get_user_by_email(email)<br ALIGN="LEFT"/>get_user_by_phone(phone)<br ALIGN="LEFT"/>build_user_document(...)<br ALIGN="LEFT"/>create_user(user)<br ALIGN="LEFT"/>}>];
+
+    "app.db.fitness_classes" [label=<{fitness_classes (Module)|<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>TITLE: str<br ALIGN="LEFT"/>DATETIME: str<br ALIGN="LEFT"/>CAPACITY: int<br ALIGN="LEFT"/>AVAILABLE_SPOTS: int<br ALIGN="LEFT"/>TRAINER_NAME: str<br ALIGN="LEFT"/>|generate_fitness_class_id()<br ALIGN="LEFT"/>get_class_by_class_id(class_id)<br ALIGN="LEFT"/>decrement_available_spot(class_id)<br ALIGN="LEFT"/>build_fitness_class_document(...)<br ALIGN="LEFT"/>create_fitness_class(fitness_class)<br ALIGN="LEFT"/>}>];
+
+    "app.db.bookings" [label=<{bookings (Module)|<br ALIGN="LEFT"/>BOOKING_ID: str<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>USER_NAME: str<br ALIGN="LEFT"/>USER_EMAIL: str<br ALIGN="LEFT"/>PHONE: str<br ALIGN="LEFT"/>ROLE: str<br ALIGN="LEFT"/>STATUS: str<br ALIGN="LEFT"/>BOOKED_AT: str<br ALIGN="LEFT"/>|utc_now_iso()<br ALIGN="LEFT"/>build_booking_document(...)<br ALIGN="LEFT"/>create_booking(booking)<br ALIGN="LEFT"/>get_booking_by_user_and_class(...)<br ALIGN="LEFT"/>list_bookings_by_class(class_id)<br ALIGN="LEFT"/>booking_exists_for_user(...)<br ALIGN="LEFT"/>}>];
+
+    // --------------------------------------------------------
+    // EXTERNAL INTEGRATIONS
+    // --------------------------------------------------------
+    "External.SendGridAPI" [label=<{SendGrid API|<br ALIGN="LEFT"/>|send(message)<br ALIGN="LEFT"/>}>];
+
+    // ========================================================
+    // RELATIONSHIPS & MULTIPLICITIES
+    // ========================================================
+    
+    // 1. DATA ASSOCIATIONS (Solid lines with Cardinality)
+    // A User (identified by USER_ID) can have 0 to many Bookings.
+    "app.db.users" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
+    
+    // A Fitness Class (identified by CLASS_ID) can have 0 to many Bookings.
+    "app.db.fitness_classes" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
+
+    // 2. DEPENDENCIES (Dashed lines, meaning "Uses" or "Calls")
+    
+    // Auth Dependencies
+    "app.apis.auth.Register" -> "app.db.users" [style="dashed", arrowhead="vee", label=" calls create_user()"];
+    "app.apis.auth.Login" -> "app.db.users" [style="dashed", arrowhead="vee", label=" calls get_user_by_email()"];
+
+    // Class Dependencies
+    "app.apis.fitness_class.ClassListResource" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee", label=" calls create_fitness_class()"];
+    
+    // Reminder Feature Dependencies (Sprint 2 Focus)
+    "app.apis.fitness_class.ClassReminderResource" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee", label=" calls get_class_by_class_id()"];
+    "app.apis.fitness_class.ClassReminderResource" -> "app.db.bookings" [style="dashed", arrowhead="vee", label=" calls list_bookings_by_class()"];
+    "app.apis.fitness_class.ClassReminderResource" -> "app.services.EmailReminderService" [style="dashed", arrowhead="vee", label=" delegates"];
+    "app.services.EmailReminderService" -> "External.SendGridAPI" [style="dashed", arrowhead="vee", label=" HTTP calls"];
+
+    // Booking Dependencies
+    "app.apis.booking.BookingResource" -> "app.db.bookings" [style="dashed", arrowhead="vee", label=" calls create_booking()"];
+    "app.apis.booking.BookingResource" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee", label=" calls decrement_available_spot()"];
+    "app.apis.booking.BookingListByClassResource" -> "app.db.bookings" [style="dashed", arrowhead="vee", label=" calls list_bookings_by_class()"];
+}
