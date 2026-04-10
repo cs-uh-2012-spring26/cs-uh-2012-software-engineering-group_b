@@ -51,78 +51,78 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 
 ---
 
-### Violation 1 — [Principle Name]
+### Violation 1 — Single Responsibility & Modularity in `Register.post`
 
-**Principle:** [e.g., Single Responsibility Principle]  
-**File:** `path/to/file.py`  
-**Lines:** [e.g., 42–78]  
-**Method/Class:** `method_or_class_name()`
+**Principle(s):** Single Responsibility Principle (SRP), Modularity / Separation of Concerns  
+**File:** `app/apis/auth.py`  
+**Lines (approx.):** 60–130  
+**Method/Class:** `Register.post` (class `Register`)
 
-**Screenshot:**
-> _[Insert screenshot of the relevant code here]_
+**Screenshot:**  
+> Insert a screenshot of the `Register.post` method in `app/apis/auth.py`, showing the full body of the method and its imports for `bcrypt`, `create_access_token`, and the DB helper functions.
 
-**Explanation:**
-> _Explain clearly why this code violates the stated principle. Be specific — reference the code directly._
-
----
-
-### Violation 2 — [Principle Name]
-
-**Principle:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
-
-**Screenshot:**
-> _[Insert screenshot]_
-
-**Explanation:**
-> _[Your explanation]_
+**Explanation:**  
+`Register.post` currently handles four distinct responsibilities at once: (1) HTTP concerns such as reading the JSON payload and returning Flask/RESTX responses; (2) business rules for checking duplicate users by email and phone; (3) security concerns for hashing passwords with bcrypt; and (4) persistence and token issuing by building a user document, inserting it into the DB, and generating a JWT access token. Because changes to any of these concerns (password policy, uniqueness rules, response format, persistence details) all require modifying this same method, it violates the Single Responsibility Principle and weakens modularity. A better design would extract a dedicated application/service function such as `register_user(data)` into a service module (e.g., `app/services/auth_service.py`) and let the Flask resource focus only on mapping HTTP requests/responses around that service.
 
 ---
 
-### Violation 3 — [Principle Name]
+### Violation 2 — Open–Closed & Tight Coupling in Hard-Coded Invite Tokens
 
-**Principle:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Principle(s):** Open–Closed Principle (OCP), Tight Coupling / Information Hiding  
+**File:** `app/apis/auth.py`  
+**Lines (approx.):** 15–60  
+**Method/Class:** Global `VALID_TOKENS` and function `validate_token`
 
-**Screenshot:**
-> _[Insert screenshot]_
+**Screenshot:**  
+> Insert a screenshot that includes the `VALID_TOKENS` dictionary and the `validate_token` decorator implementation in `app/apis/auth.py`.
 
-**Explanation:**
-> _[Your explanation]_
-
----
-
-### Violation 4 — [Principle Name]
-
-**Principle:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
-
-**Screenshot:**
-> _[Insert screenshot]_
-
-**Explanation:**
-> _[Your explanation]_
+**Explanation:**  
+The registration invite tokens are hard-coded in a global `VALID_TOKENS` dictionary within the API module, and the `validate_token` decorator directly reads from this dictionary to determine the user role. In practice, that means any change to token behavior—such as adding new tokens, changing roles, or moving tokens into a database—requires editing this API file, which goes against the Open–Closed Principle. It also creates tight coupling: the API layer knows the exact tokens and how roles are derived from them, instead of relying on a hidden implementation behind a cleaner interface. A more extensible and loosely coupled design would introduce an abstraction like `resolve_registration_role(token: str) -> str | None` in a separate service module, so the API depends on a role-resolution API rather than a specific in-memory dictionary.
 
 ---
 
-### Violation 5 — [Principle Name]
+### Violation 3 — Separation of Concerns in API-to-DB Coupling
 
-**Principle:**  
-**File:**  
-**Lines:**  
-**Method/Class:**
+**Principle(s):** Separation of Concerns (SoC), Layered Architecture  
+**Files:**  
+	- `app/apis/booking.py` (class `BookingResource`, method `post`, approx. lines 40–130)  
+	- `app/apis/fitness_class.py` (class `ClassListResource`, method `post`, approx. lines 60–150)
 
-**Screenshot:**
-> _[Insert screenshot]_
+**Screenshot:**  
+> Insert screenshots showing `BookingResource.post` in `app/apis/booking.py` (where it calls DB functions like `get_user_by_email`, `booking_exists_for_user`, `get_class_by_class_id`, `decrement_available_spot`, and `create_booking`), and `ClassListResource.post` in `app/apis/fitness_class.py` (where it calls `class_exists`, `build_fitness_class_document`, and `create_fitness_class`).
 
-**Explanation:**
-> _[Your explanation]_
+**Explanation:**  
+Both the booking and class creation endpoints depend directly on low-level database helpers. For example, `BookingResource.post` calls persistence functions like `get_user_by_email`, `booking_exists_for_user`, and `decrement_available_spot`, while `ClassListResource.post` calls `class_exists` and `create_fitness_class`. In other words, the web controllers are reaching straight into the data layer instead of going through a clear application/service layer, which blurs the separation of concerns and weakens the idea of a layered architecture. Introducing a booking/class service (for example, `BookingService.book_class(user, class_id)` or `ClassService.create_class(...)`) would keep controller logic focused on HTTP concerns while the service layer owns the orchestration of DB operations, making the overall design easier to test, reason about, and extend.
+
+---
+
+### Violation 4 — Immutability & Side Effects in `serialize_item`
+
+**Principle(s):** Immutability, Side Effects / Functional Purity  
+**File:** `app/db/utils.py`  
+**Lines (approx.):** 15–45  
+**Method/Class:** Function `serialize_item`
+
+**Screenshot:**  
+> Insert a screenshot showing the implementation of `serialize_item` (and optionally `serialize_items`) in `app/db/utils.py`.
+
+**Explanation:**  
+The `serialize_item` function is intended to convert a MongoDB document into a serialized form by turning the `_id` field into a string. However, it mutates the passed-in dictionary in place (`item[ID] = serialize_oid(item[ID])`) and then returns the same object. That side effect can be surprising: callers may still rely on the original `ObjectId` type and might not expect that simply “formatting” an item changes the underlying data structure they hold. From an immutability/functional-purity perspective, it is usually cleaner for a helper like this to return a new, serialized copy of the data (for example `{**item, ID: serialize_oid(item[ID])}`) and leave the original input untouched, which makes the behavior easier to reason about and safer to reuse.
+
+---
+
+### Violation 5 — Improper Exception Handling in Global Catch-All Exception Handler
+
+**Principle(s):** Improper Exception Handling (Catch-All Anti-Pattern), Separation of Concerns  
+**File:** `app/__init__.py`  
+**Lines (approx.):** 35–80  
+**Method/Class:** Nested function `handle_input_validation_error` with `@api.errorhandler(Exception)` inside `create_app`
+
+**Screenshot:**  
+> Insert a screenshot from `app/__init__.py` that includes the `create_app` function and the nested `handle_input_validation_error` registered via `@api.errorhandler(Exception)`.
+
+**Explanation:**  
+The global error handler in `create_app` is registered for the base `Exception` type and maps every exception in the system to a generic HTTP 500 response with `{"message": str(error)}`. In effect, this is a classic catch-all anti-pattern: domain errors, validation errors, infrastructure failures, and even programming bugs are all treated identically, so you lose the ability to respond differently to different classes of failure. It also adds another concern into `create_app`, which is already busy with configuration, JWT setup, DB initialization, and namespace registration. A cleaner approach would define a few focused exception types (for example `DomainError`, `AuthorizationError`, `InfrastructureError`) and register specific handlers for each, while keeping a final generic handler only as a true last resort. That keeps error-handling logic better separated from app wiring and makes the behavior of failures much more intentional and understandable.
 
 ---
 
