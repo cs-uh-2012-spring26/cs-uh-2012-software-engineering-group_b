@@ -19,6 +19,7 @@ from app.db.fitness_classes import (
     TITLE,
     TRAINER_NAME,
     build_fitness_class_document,
+    class_exists,
     create_fitness_class,
     get_class_by_class_id,
 )
@@ -83,6 +84,7 @@ class ClassListResource(Resource):
 
     @api.expect(create_class_model)
     @api.response(HTTPStatus.CREATED, "Class created")
+    @api.response(HTTPStatus.CONFLICT, "Class already exists")
     @api.response(HTTPStatus.FORBIDDEN, "Only trainer/admin can create classes")
     @api.response(HTTPStatus.BAD_REQUEST, "Invalid fields")
     @require_roles(["trainer", "admin"])
@@ -119,16 +121,24 @@ class ClassListResource(Resource):
             return {
                 MSG: f"{TITLE} and {TRAINER_NAME} must be non-empty strings"
             }, HTTPStatus.BAD_REQUEST
+
+        normalized_title = title.strip()
+        normalized_trainer_name = trainer_name.strip()
         
         # logic checks
         if parsed_dt <= dt_mod.now(timezone.utc):
             return {
                 MSG: f"{DATETIME} must not be in the past"
             }, HTTPStatus.BAD_REQUEST
+
+        if class_exists(normalized_title, dt, normalized_trainer_name):
+            return {
+                MSG: "Class already exists"
+            }, HTTPStatus.CONFLICT
         
         
         # build and insert
-        doc = build_fitness_class_document(title, dt, capacity, trainer_name)
+        doc = build_fitness_class_document(normalized_title, dt, capacity, normalized_trainer_name)
         fitness_class = create_fitness_class(doc)
 
         return {MSG: fitness_class}, HTTPStatus.CREATED

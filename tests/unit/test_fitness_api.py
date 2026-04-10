@@ -26,6 +26,23 @@ def test_add_fitness_class_correct_fields(client, trainer_headers):
     assert response.status_code == HTTPStatus.CREATED
 
 
+def test_add_fitness_class_duplicate_rejected(client, trainer_headers):
+    """Creating the same class twice is rejected with conflict."""
+    payload = {
+        TITLE: "Lunch Pilates",
+        DATETIME: "2036-04-20T12:00:00Z",
+        CAPACITY: 15,
+        TRAINER_NAME: "Alex Trainer",
+    }
+
+    first_response = client.post("/classes/", json=payload, headers=trainer_headers)
+    assert first_response.status_code == HTTPStatus.CREATED
+
+    second_response = client.post("/classes/", json=payload, headers=trainer_headers)
+    assert second_response.status_code == HTTPStatus.CONFLICT
+    assert second_response.json[MSG] == "Class already exists"
+
+
 def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mocker):
     """Trainer can send reminders to booked attendees before class start."""
     monkeypatch.setenv("SENDGRID_FROM_EMAIL", "noreply@coachly.dev")

@@ -67,7 +67,6 @@ create_booking_model = api.model(
     "CreateBookingRequest",
     {
         CLASS_ID: fields.String(example=_EXAMPLE_BOOKING[CLASS_ID]),
-        USER_EMAIL: fields.String(example=_EXAMPLE_BOOKING[USER_EMAIL], description="Optional; if provided must match the authenticated user's email"),
     },
 )
 
@@ -91,15 +90,11 @@ class BookingResource(Resource):
         data = request.json if isinstance(request.json, dict) else {}
 
         class_id = data.get(CLASS_ID)
-        request_email = data.get(USER_EMAIL)
 
         if not token_user_email or not class_id:
             return {
                 MSG: f"{CLASS_ID} is required",
             }, HTTPStatus.BAD_REQUEST
-
-        if request_email and request_email != token_user_email:
-            return {MSG: "Email does not match authenticated user"}, HTTPStatus.FORBIDDEN
 
         user = get_user_by_email(token_user_email)
         if user is None:
