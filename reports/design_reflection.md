@@ -9,7 +9,7 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 | Team Member | Responsibilities |
 |-------------|-----------------|
 | [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary and exploring and documneting new feature foresee for task 4 |
-| [Juan Diego]      | Task 3 Identify Code Smells in Your Source Code and Tests |
+| [Juan Diego]      | Task 3 Identify Code Smells in the Source Code and Tests, fixed issues with previous sprint. |
 | [Name]      | e.g., Task 4 reflection, report formatting, review |
 
 ---
