@@ -9,7 +9,7 @@ To ensure our UML diagrams accurately reflected the system architecture while re
 | Team Member | Responsibilities |
 |-------------|-----------------|
 | [Tianze]    | Task 1 creating and explain in depth the class diagrams and sequence diagrams and detailing the executive summary |
-| [Name]      | e.g., Sequence diagrams, Task 2 violations 3–5, Task 3 smells 3–5 |
+| [Juan Diego]      | Task 3 Identify Code Smells in Your Source Code and Tests |
 | [Name]      | e.g., Task 4 reflection, report formatting, review |
 
 ---
