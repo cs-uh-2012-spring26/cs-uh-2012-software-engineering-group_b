@@ -40,53 +40,55 @@ digraph "classes_FitnessApp" {
     }
 
     // --------------------------------------------------------
-    // DATABASE LAYER (Persistence & DTOs)
+    // DOMAIN & DATABASE LAYER (Inheritance & DTOs)
     // --------------------------------------------------------
     subgraph cluster_db {
-        label="Database Layer";
+        label="Database & Domain Layer";
         style=dashed;
         
-        "app.db.users" [label=<{users (Module)|<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>NAME: str<br ALIGN="LEFT"/>EMAIL: str<br ALIGN="LEFT"/>ROLE: str<br ALIGN="LEFT"/>|get_user_by_email(email)<br ALIGN="LEFT"/>get_user_by_phone(phone)<br ALIGN="LEFT"/>create_user(user)<br ALIGN="LEFT"/>build_user_document(...)<br ALIGN="LEFT"/>}>];
+        // --- NEW INHERITANCE HIERARCHY ---
+        "app.db.users.User" [label=<{User (Abstract)|<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>NAME: str<br ALIGN="LEFT"/>EMAIL: str<br ALIGN="LEFT"/>PHONE: str<br ALIGN="LEFT"/>|}>];
+        "app.db.users.Member" [label=<{Member|<br ALIGN="LEFT"/>|book_class()<br ALIGN="LEFT"/>}>];
+        "app.db.users.Trainer" [label=<{Trainer|<br ALIGN="LEFT"/>|create_class()<br ALIGN="LEFT"/>send_reminders()<br ALIGN="LEFT"/>}>];
+        "app.db.users.Admin" [label=<{Admin|<br ALIGN="LEFT"/>|manage_system()<br ALIGN="LEFT"/>}>];
         
-        "app.db.fitness_classes" [label=<{fitness_classes (Module)|<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>CAPACITY: int<br ALIGN="LEFT"/>AVAILABLE_SPOTS: int<br ALIGN="LEFT"/>RECURRENCE_PATTERN: str &lt;&lt;Feat 6&gt;&gt;<br ALIGN="LEFT"/>|get_class_by_class_id(class_id)<br ALIGN="LEFT"/>decrement_available_spot(class_id)<br ALIGN="LEFT"/>create_fitness_class(fitness_class)<br ALIGN="LEFT"/>class_exists(...)<br ALIGN="LEFT"/>}>];
+        "app.db.users.users_module" [label=<{users (Module)|<br ALIGN="LEFT"/>|get_user_by_email(email)<br ALIGN="LEFT"/>get_user_by_phone(phone)<br ALIGN="LEFT"/>create_user(User)<br ALIGN="LEFT"/>}>];
         
-        "app.db.bookings" [label=<{bookings (Module)|<br ALIGN="LEFT"/>BookingUser (DTO)<br ALIGN="LEFT"/>BOOKING_ID: str<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>|build_booking_document(class_id, booking_user)<br ALIGN="LEFT"/>create_booking(booking)<br ALIGN="LEFT"/>booking_exists_for_user(...)<br ALIGN="LEFT"/>list_bookings_by_class(class_id)<br ALIGN="LEFT"/>}>];
+        "app.db.fitness_classes" [label=<{fitness_classes (Module)|<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>CAPACITY: int<br ALIGN="LEFT"/>AVAILABLE_SPOTS: int<br ALIGN="LEFT"/>RECURRENCE_PATTERN: str &lt;&lt;Feat 6&gt;&gt;<br ALIGN="LEFT"/>|get_class_by_class_id(class_id)<br ALIGN="LEFT"/>decrement_available_spot(class_id)<br ALIGN="LEFT"/>create_fitness_class(fitness_class)<br ALIGN="LEFT"/>}>];
+        
+        "app.db.bookings" [label=<{bookings (Module)|<br ALIGN="LEFT"/>BookingUser (DTO)<br ALIGN="LEFT"/>BOOKING_ID: str<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>|build_booking_document(class_id, booking_user)<br ALIGN="LEFT"/>create_booking(booking)<br ALIGN="LEFT"/>}>];
     }
 
-    // --------------------------------------------------------
-    // EXTERNAL INTEGRATIONS
-    // --------------------------------------------------------
+    // EXTERNAL INTEGRATION
     "External.SendGridAPI" [label=<{SendGrid API|<br ALIGN="LEFT"/>|send(message)<br ALIGN="LEFT"/>}>];
 
     // ========================================================
     // RELATIONSHIPS & MULTIPLICITIES
     // ========================================================
     
+    // --- UML INHERITANCE (Addresses TA Feedback) ---
+    "app.db.users.Member" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+    "app.db.users.Trainer" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+    "app.db.users.Admin" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+
     // DATA ASSOCIATIONS
-    "app.db.users" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
+    "app.db.users.User" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
     "app.db.fitness_classes" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
 
     // API to SERVICE DELEGATION
-    "app.apis.auth.Register" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee", label=" delegates"];
-    "app.apis.auth.Login" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee", label=" delegates"];
-    "app.apis.fitness_class.ClassListResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee", label=" delegates"];
-    "app.apis.fitness_class.ClassReminderResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee", label=" delegates"];
-    "app.apis.booking.BookingResource" -> "app.services.booking_service.BookingService" [style="dashed", arrowhead="vee", label=" delegates"];
+    "app.apis.auth.Register" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee"];
+    "app.apis.auth.Login" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee"];
+    "app.apis.fitness_class.ClassListResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee"];
+    "app.apis.fitness_class.ClassReminderResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee"];
+    "app.apis.booking.BookingResource" -> "app.services.booking_service.BookingService" [style="dashed", arrowhead="vee"];
     
-    // SERVICE to SERVICE / MODULE DELEGATION
-    "app.services.auth_service.AuthService" -> "app.services.token_service.TokenService" [style="dashed", arrowhead="vee", label=" validates token"];
-    "app.services.fitness_class_service.FitnessClassService" -> "app.services.email_reminders" [style="dashed", arrowhead="vee", label=" delegates emails"];
+    // SERVICE to DB DELEGATION
+    "app.services.auth_service.AuthService" -> "app.db.users.users_module" [style="dashed", arrowhead="vee"];
+    "app.services.booking_service.BookingService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee"];
+    "app.services.booking_service.BookingService" -> "app.db.bookings" [style="dashed", arrowhead="vee"];
+    "app.services.fitness_class_service.FitnessClassService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee"];
+    "app.services.fitness_class_service.FitnessClassService" -> "app.services.email_reminders" [style="dashed", arrowhead="vee"];
     
-    // SERVICE to DATABASE DELEGATION
-    "app.services.auth_service.AuthService" -> "app.db.users" [style="dashed", arrowhead="vee", label=" calls"];
-    
-    "app.services.booking_service.BookingService" -> "app.db.users" [style="dashed", arrowhead="vee", label=" fetches"];
-    "app.services.booking_service.BookingService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee", label=" checks & updates"];
-    "app.services.booking_service.BookingService" -> "app.db.bookings" [style="dashed", arrowhead="vee", label=" writes"];
-    
-    "app.services.fitness_class_service.FitnessClassService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee", label=" reads/writes"];
-    "app.services.fitness_class_service.FitnessClassService" -> "app.db.bookings" [style="dashed", arrowhead="vee", label=" fetches attendees"];
-
     // EXTERNAL CALLS
     "app.services.email_reminders" -> "External.SendGridAPI" [style="dashed", arrowhead="vee", label=" HTTP POST"];
 }

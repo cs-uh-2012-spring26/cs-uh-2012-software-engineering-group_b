@@ -1,302 +1,333 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1469pt" height="842pt" viewBox="0.00 0.00 1468.71 841.60">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 837.6)">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1487pt" height="954pt" viewBox="0.00 0.00 1487.00 954.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 950)">
 <title>classes_FitnessApp</title>
-<polygon fill="white" stroke="none" points="-4,4 -4,-837.6 1464.71,-837.6 1464.71,4 -4,4"/>
+<polygon fill="white" stroke="none" points="-4,4 -4,-950 1483.19,-950 1483.19,4 -4,4"/>
 <g id="clust1" class="cluster">
 <title>cluster_api</title>
-<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="57,-692.6 57,-825.6 915,-825.6 915,-692.6 57,-692.6"/>
-<text text-anchor="middle" x="486" y="-809" font-family="Times,serif" font-size="14.00">API Layer</text>
+<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="57,-805 57,-938 915,-938 915,-805 57,-805"/>
+<text xml:space="preserve" text-anchor="middle" x="486" y="-921.4" font-family="Times,serif" font-size="14.00">API Layer</text>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_service</title>
-<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="8,-274.2 8,-662.6 755,-662.6 755,-274.2 8,-274.2"/>
-<text text-anchor="middle" x="381.5" y="-646" font-family="Times,serif" font-size="14.00">Service Layer</text>
+<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="8,-439.6 8,-786 755,-786 755,-439.6 8,-439.6"/>
+<text xml:space="preserve" text-anchor="middle" x="381.5" y="-769.4" font-family="Times,serif" font-size="14.00">Service Layer</text>
 </g>
 <g id="clust3" class="cluster">
 <title>cluster_db</title>
-<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="763,-8 763,-482.8 1273,-482.8 1273,-8 763,-8"/>
-<text text-anchor="middle" x="1018" y="-466.2" font-family="Times,serif" font-size="14.00">Database Layer</text>
+<polygon fill="none" stroke="black" stroke-dasharray="5,2" points="763,-8 763,-606.2 1369,-606.2 1369,-8 763,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="1066" y="-589.6" font-family="Times,serif" font-size="14.00">Database &amp; Domain Layer</text>
 </g>
 <!-- app.apis.auth.Register -->
 <g id="node1" class="node">
 <title>app.apis.auth.Register</title>
-<polygon fill="none" stroke="black" points="64.93,-709.5 64.93,-783.9 133.07,-783.9 133.07,-709.5 64.93,-709.5"/>
-<text text-anchor="start" x="72.93" y="-767.3" font-family="Helvetica,sans-Serif" font-size="14.00">Register</text>
-<polyline fill="none" stroke="black" points="64.93,-759.1 133.07,-759.1"/>
-<polyline fill="none" stroke="black" points="64.93,-734.3 133.07,-734.3"/>
-<text text-anchor="start" x="81.11" y="-717.7" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
+<polygon fill="none" stroke="black" points="64.93,-821.9 64.93,-896.3 133.07,-896.3 133.07,-821.9 64.93,-821.9"/>
+<text xml:space="preserve" text-anchor="start" x="72.93" y="-879.7" font-family="Helvetica,sans-Serif" font-size="14.00">Register</text>
+<polyline fill="none" stroke="black" points="64.93,-871.5 133.07,-871.5"/>
+<polyline fill="none" stroke="black" points="64.93,-846.7 133.07,-846.7"/>
+<text xml:space="preserve" text-anchor="start" x="81.11" y="-830.1" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
 </g>
 <!-- app.services.auth_service.AuthService -->
 <g id="node7" class="node">
 <title>app.services.auth_service.AuthService</title>
-<polygon fill="none" stroke="black" points="16.3,-529.7 16.3,-620.9 181.7,-620.9 181.7,-529.7 16.3,-529.7"/>
-<text text-anchor="start" x="61.26" y="-604.3" font-family="Helvetica,sans-Serif" font-size="14.00">AuthService</text>
-<polyline fill="none" stroke="black" points="16.3,-596.1 181.7,-596.1"/>
-<polyline fill="none" stroke="black" points="16.3,-571.3 181.7,-571.3"/>
-<text text-anchor="start" x="24.3" y="-554.7" font-family="Helvetica,sans-Serif" font-size="14.00">register_user(data, role)</text>
-<text text-anchor="start" x="24.3" y="-537.9" font-family="Helvetica,sans-Serif" font-size="14.00">login_user(data)</text>
+<polygon fill="none" stroke="black" points="16.3,-653.1 16.3,-744.3 181.7,-744.3 181.7,-653.1 16.3,-653.1"/>
+<text xml:space="preserve" text-anchor="start" x="61.26" y="-727.7" font-family="Helvetica,sans-Serif" font-size="14.00">AuthService</text>
+<polyline fill="none" stroke="black" points="16.3,-719.5 181.7,-719.5"/>
+<polyline fill="none" stroke="black" points="16.3,-694.7 181.7,-694.7"/>
+<text xml:space="preserve" text-anchor="start" x="24.3" y="-678.1" font-family="Helvetica,sans-Serif" font-size="14.00">register_user(data, role)</text>
+<text xml:space="preserve" text-anchor="start" x="24.3" y="-661.3" font-family="Helvetica,sans-Serif" font-size="14.00">login_user(data)</text>
 </g>
 <!-- app.apis.auth.Register&#45;&gt;app.services.auth_service.AuthService -->
-<g id="edge3" class="edge">
+<g id="edge6" class="edge">
 <title>app.apis.auth.Register-&gt;app.services.auth_service.AuthService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M99,-709.36C99,-686.92 99,-657.66 99,-632.3"/>
-<polygon fill="black" stroke="black" points="99,-622.55 103.5,-632.55 99,-626.34 99,-632.55 99,-632.55 99,-632.55 99,-626.34 94.5,-632.55 99,-622.55"/>
-<text text-anchor="middle" x="122.07" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M99,-821.76C99,-802.24 99,-777.74 99,-755.83"/>
+<polygon fill="black" stroke="black" points="99,-745.86 103.5,-755.86 99,-749.65 99,-755.86 99,-755.86 99,-755.86 99,-749.65 94.5,-755.86 99,-745.86"/>
 </g>
 <!-- app.apis.auth.Login -->
 <g id="node2" class="node">
 <title>app.apis.auth.Login</title>
-<polygon fill="none" stroke="black" points="151,-709.5 151,-783.9 205,-783.9 205,-709.5 151,-709.5"/>
-<text text-anchor="start" x="160.77" y="-767.3" font-family="Helvetica,sans-Serif" font-size="14.00">Login</text>
-<polyline fill="none" stroke="black" points="151,-759.1 204.79,-759.1"/>
-<polyline fill="none" stroke="black" points="151,-734.3 204.79,-734.3"/>
-<text text-anchor="start" x="160" y="-717.7" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
+<polygon fill="none" stroke="black" points="151,-821.9 151,-896.3 205,-896.3 205,-821.9 151,-821.9"/>
+<text xml:space="preserve" text-anchor="start" x="160.77" y="-879.7" font-family="Helvetica,sans-Serif" font-size="14.00">Login</text>
+<polyline fill="none" stroke="black" points="151,-871.5 204.79,-871.5"/>
+<polyline fill="none" stroke="black" points="151,-846.7 204.79,-846.7"/>
+<text xml:space="preserve" text-anchor="start" x="160" y="-830.1" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
 </g>
 <!-- app.apis.auth.Login&#45;&gt;app.services.auth_service.AuthService -->
-<g id="edge4" class="edge">
+<g id="edge7" class="edge">
 <title>app.apis.auth.Login-&gt;app.services.auth_service.AuthService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M164.85,-709.05C160.15,-696.7 154.63,-682.93 149,-670.6 143.05,-657.57 136.14,-643.81 129.39,-630.95"/>
-<polygon fill="black" stroke="black" points="124.84,-622.39 133.51,-629.12 126.62,-625.73 129.53,-631.23 129.53,-631.23 129.53,-631.23 126.62,-625.73 125.56,-633.34 124.84,-622.39"/>
-<text text-anchor="middle" x="176.49" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M159.88,-821.76C149.96,-801.88 137.47,-776.84 126.39,-754.63"/>
+<polygon fill="black" stroke="black" points="121.96,-745.74 130.45,-752.68 123.65,-749.12 126.42,-754.68 126.42,-754.68 126.42,-754.68 123.65,-749.12 122.4,-756.69 121.96,-745.74"/>
 </g>
 <!-- app.apis.fitness_class.ClassListResource -->
 <g id="node3" class="node">
 <title>app.apis.fitness_class.ClassListResource</title>
-<polygon fill="none" stroke="black" points="222.65,-701.1 222.65,-792.3 355.35,-792.3 355.35,-701.1 222.65,-701.1"/>
-<text text-anchor="start" x="230.65" y="-775.7" font-family="Helvetica,sans-Serif" font-size="14.00">ClassListResource</text>
-<polyline fill="none" stroke="black" points="222.65,-767.5 355.35,-767.5"/>
-<polyline fill="none" stroke="black" points="222.65,-742.7 355.35,-742.7"/>
-<text text-anchor="start" x="271.11" y="-726.1" font-family="Helvetica,sans-Serif" font-size="14.00">get()</text>
-<text text-anchor="start" x="271.11" y="-709.3" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
+<polygon fill="none" stroke="black" points="222.65,-813.5 222.65,-904.7 355.35,-904.7 355.35,-813.5 222.65,-813.5"/>
+<text xml:space="preserve" text-anchor="start" x="230.65" y="-888.1" font-family="Helvetica,sans-Serif" font-size="14.00">ClassListResource</text>
+<polyline fill="none" stroke="black" points="222.65,-879.9 355.35,-879.9"/>
+<polyline fill="none" stroke="black" points="222.65,-855.1 355.35,-855.1"/>
+<text xml:space="preserve" text-anchor="start" x="271.11" y="-838.5" font-family="Helvetica,sans-Serif" font-size="14.00">get()</text>
+<text xml:space="preserve" text-anchor="start" x="271.11" y="-821.7" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
 </g>
 <!-- app.services.fitness_class_service.FitnessClassService -->
 <g id="node10" class="node">
 <title>app.services.fitness_class_service.FitnessClassService</title>
-<polygon fill="none" stroke="black" points="199.47,-521.3 199.47,-629.3 506.53,-629.3 506.53,-521.3 199.47,-521.3"/>
-<text text-anchor="start" x="289.59" y="-612.7" font-family="Helvetica,sans-Serif" font-size="14.00">FitnessClassService</text>
-<polyline fill="none" stroke="black" points="199.47,-604.5 506.53,-604.5"/>
-<polyline fill="none" stroke="black" points="199.47,-579.7 506.53,-579.7"/>
-<text text-anchor="start" x="207.47" y="-563.1" font-family="Helvetica,sans-Serif" font-size="14.00">create_class(payload)</text>
-<text text-anchor="start" x="207.47" y="-546.3" font-family="Helvetica,sans-Serif" font-size="14.00">create_recurring_classes(payload) &lt;&lt;Feat 6&gt;&gt;</text>
-<text text-anchor="start" x="207.47" y="-529.5" font-family="Helvetica,sans-Serif" font-size="14.00">send_reminders(class_id, sender_email)</text>
+<polygon fill="none" stroke="black" points="199.47,-644.7 199.47,-752.7 506.53,-752.7 506.53,-644.7 199.47,-644.7"/>
+<text xml:space="preserve" text-anchor="start" x="289.59" y="-736.1" font-family="Helvetica,sans-Serif" font-size="14.00">FitnessClassService</text>
+<polyline fill="none" stroke="black" points="199.47,-727.9 506.53,-727.9"/>
+<polyline fill="none" stroke="black" points="199.47,-703.1 506.53,-703.1"/>
+<text xml:space="preserve" text-anchor="start" x="207.47" y="-686.5" font-family="Helvetica,sans-Serif" font-size="14.00">create_class(payload)</text>
+<text xml:space="preserve" text-anchor="start" x="207.47" y="-669.7" font-family="Helvetica,sans-Serif" font-size="14.00">create_recurring_classes(payload) &lt;&lt;Feat 6&gt;&gt;</text>
+<text xml:space="preserve" text-anchor="start" x="207.47" y="-652.9" font-family="Helvetica,sans-Serif" font-size="14.00">send_reminders(class_id, sender_email)</text>
 </g>
 <!-- app.apis.fitness_class.ClassListResource&#45;&gt;app.services.fitness_class_service.FitnessClassService -->
-<g id="edge5" class="edge">
+<g id="edge8" class="edge">
 <title>app.apis.fitness_class.ClassListResource-&gt;app.services.fitness_class_service.FitnessClassService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M305.98,-700.75C313.02,-682.14 321.3,-660.21 328.94,-639.99"/>
-<polygon fill="black" stroke="black" points="332.43,-630.74 333.11,-641.68 331.1,-634.27 328.9,-640.09 328.9,-640.09 328.9,-640.09 331.1,-634.27 324.69,-638.5 332.43,-630.74"/>
-<text text-anchor="middle" x="340.24" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M307.17,-813.13C313.44,-797.61 320.59,-779.9 327.35,-763.18"/>
+<polygon fill="black" stroke="black" points="331.04,-754.05 331.47,-765 329.63,-757.55 327.3,-763.32 327.3,-763.32 327.3,-763.32 329.63,-757.55 323.12,-761.63 331.04,-754.05"/>
 </g>
 <!-- app.apis.fitness_class.ClassReminderResource -->
 <g id="node4" class="node">
 <title>app.apis.fitness_class.ClassReminderResource</title>
-<polygon fill="none" stroke="black" points="373.19,-709.5 373.19,-783.9 544.81,-783.9 544.81,-709.5 373.19,-709.5"/>
-<text text-anchor="start" x="381.19" y="-767.3" font-family="Helvetica,sans-Serif" font-size="14.00">ClassReminderResource</text>
-<polyline fill="none" stroke="black" points="373.19,-759.1 544.81,-759.1"/>
-<polyline fill="none" stroke="black" points="373.19,-734.3 544.81,-734.3"/>
-<text text-anchor="start" x="404.15" y="-717.7" font-family="Helvetica,sans-Serif" font-size="14.00">post(class_id: str)</text>
+<polygon fill="none" stroke="black" points="373.19,-821.9 373.19,-896.3 544.81,-896.3 544.81,-821.9 373.19,-821.9"/>
+<text xml:space="preserve" text-anchor="start" x="381.19" y="-879.7" font-family="Helvetica,sans-Serif" font-size="14.00">ClassReminderResource</text>
+<polyline fill="none" stroke="black" points="373.19,-871.5 544.81,-871.5"/>
+<polyline fill="none" stroke="black" points="373.19,-846.7 544.81,-846.7"/>
+<text xml:space="preserve" text-anchor="start" x="404.15" y="-830.1" font-family="Helvetica,sans-Serif" font-size="14.00">post(class_id: str)</text>
 </g>
 <!-- app.apis.fitness_class.ClassReminderResource&#45;&gt;app.services.fitness_class_service.FitnessClassService -->
-<g id="edge6" class="edge">
+<g id="edge9" class="edge">
 <title>app.apis.fitness_class.ClassReminderResource-&gt;app.services.fitness_class_service.FitnessClassService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M436.26,-709.36C423.43,-688.85 407.03,-662.64 392.19,-638.93"/>
-<polygon fill="black" stroke="black" points="387.02,-630.66 396.14,-636.75 389.02,-633.87 392.32,-639.14 392.32,-639.14 392.32,-639.14 389.02,-633.87 388.51,-641.53 387.02,-630.66"/>
-<text text-anchor="middle" x="441.69" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M434.68,-821.76C422.86,-804.1 408.32,-782.36 394.79,-762.15"/>
+<polygon fill="black" stroke="black" points="389.34,-754.01 398.64,-759.82 391.45,-757.15 394.9,-762.32 394.9,-762.32 394.9,-762.32 391.45,-757.15 391.17,-764.82 389.34,-754.01"/>
 </g>
 <!-- app.apis.booking.BookingResource -->
 <g id="node5" class="node">
 <title>app.apis.booking.BookingResource</title>
-<polygon fill="none" stroke="black" points="562.75,-709.5 562.75,-783.9 689.25,-783.9 689.25,-709.5 562.75,-709.5"/>
-<text text-anchor="start" x="570.75" y="-767.3" font-family="Helvetica,sans-Serif" font-size="14.00">BookingResource</text>
-<polyline fill="none" stroke="black" points="562.75,-759.1 689.25,-759.1"/>
-<polyline fill="none" stroke="black" points="562.75,-734.3 689.25,-734.3"/>
-<text text-anchor="start" x="608.11" y="-717.7" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
+<polygon fill="none" stroke="black" points="562.75,-821.9 562.75,-896.3 689.25,-896.3 689.25,-821.9 562.75,-821.9"/>
+<text xml:space="preserve" text-anchor="start" x="570.75" y="-879.7" font-family="Helvetica,sans-Serif" font-size="14.00">BookingResource</text>
+<polyline fill="none" stroke="black" points="562.75,-871.5 689.25,-871.5"/>
+<polyline fill="none" stroke="black" points="562.75,-846.7 689.25,-846.7"/>
+<text xml:space="preserve" text-anchor="start" x="608.11" y="-830.1" font-family="Helvetica,sans-Serif" font-size="14.00">post()</text>
 </g>
 <!-- app.services.booking_service.BookingService -->
 <g id="node9" class="node">
 <title>app.services.booking_service.BookingService</title>
-<polygon fill="none" stroke="black" points="524.9,-538.1 524.9,-612.5 747.1,-612.5 747.1,-538.1 524.9,-538.1"/>
-<text text-anchor="start" x="587.36" y="-595.9" font-family="Helvetica,sans-Serif" font-size="14.00">BookingService</text>
-<polyline fill="none" stroke="black" points="524.9,-587.7 747.1,-587.7"/>
-<polyline fill="none" stroke="black" points="524.9,-562.9 747.1,-562.9"/>
-<text text-anchor="start" x="532.9" y="-546.3" font-family="Helvetica,sans-Serif" font-size="14.00">book_class(user_email, class_id)</text>
+<polygon fill="none" stroke="black" points="524.9,-661.5 524.9,-735.9 747.1,-735.9 747.1,-661.5 524.9,-661.5"/>
+<text xml:space="preserve" text-anchor="start" x="587.36" y="-719.3" font-family="Helvetica,sans-Serif" font-size="14.00">BookingService</text>
+<polyline fill="none" stroke="black" points="524.9,-711.1 747.1,-711.1"/>
+<polyline fill="none" stroke="black" points="524.9,-686.3 747.1,-686.3"/>
+<text xml:space="preserve" text-anchor="start" x="532.9" y="-669.7" font-family="Helvetica,sans-Serif" font-size="14.00">book_class(user_email, class_id)</text>
 </g>
 <!-- app.apis.booking.BookingResource&#45;&gt;app.services.booking_service.BookingService -->
-<g id="edge7" class="edge">
+<g id="edge10" class="edge">
 <title>app.apis.booking.BookingResource-&gt;app.services.booking_service.BookingService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M628.15,-709.36C629.62,-684.44 631.58,-651.11 633.18,-624.05"/>
-<polygon fill="black" stroke="black" points="633.77,-614.09 637.67,-624.34 633.55,-617.86 633.18,-624.07 633.18,-624.07 633.18,-624.07 633.55,-617.86 628.69,-623.81 633.77,-614.09"/>
-<text text-anchor="middle" x="653.48" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M628.29,-821.76C629.69,-799.6 631.5,-771.04 633.01,-747.12"/>
+<polygon fill="black" stroke="black" points="633.62,-737.36 637.48,-747.62 633.38,-741.14 632.99,-747.34 632.99,-747.34 632.99,-747.34 633.38,-741.14 628.5,-747.06 633.62,-737.36"/>
 </g>
 <!-- app.apis.booking.BookingListByClassResource -->
 <g id="node6" class="node">
 <title>app.apis.booking.BookingListByClassResource</title>
-<polygon fill="none" stroke="black" points="707.18,-709.5 707.18,-783.9 906.82,-783.9 906.82,-709.5 707.18,-709.5"/>
-<text text-anchor="start" x="715.18" y="-767.3" font-family="Helvetica,sans-Serif" font-size="14.00">BookingListByClassResource</text>
-<polyline fill="none" stroke="black" points="707.18,-759.1 906.82,-759.1"/>
-<polyline fill="none" stroke="black" points="707.18,-734.3 906.82,-734.3"/>
-<text text-anchor="start" x="755.65" y="-717.7" font-family="Helvetica,sans-Serif" font-size="14.00">get(class_id: str)</text>
+<polygon fill="none" stroke="black" points="707.18,-821.9 707.18,-896.3 906.82,-896.3 906.82,-821.9 707.18,-821.9"/>
+<text xml:space="preserve" text-anchor="start" x="715.18" y="-879.7" font-family="Helvetica,sans-Serif" font-size="14.00">BookingListByClassResource</text>
+<polyline fill="none" stroke="black" points="707.18,-871.5 906.82,-871.5"/>
+<polyline fill="none" stroke="black" points="707.18,-846.7 906.82,-846.7"/>
+<text xml:space="preserve" text-anchor="start" x="755.65" y="-830.1" font-family="Helvetica,sans-Serif" font-size="14.00">get(class_id: str)</text>
 </g>
 <!-- app.services.token_service.TokenService -->
 <g id="node8" class="node">
 <title>app.services.token_service.TokenService</title>
-<polygon fill="none" stroke="black" points="17.42,-295.5 17.42,-411.5 176.58,-411.5 176.58,-295.5 17.42,-295.5"/>
-<text text-anchor="start" x="54.2" y="-394.9" font-family="Helvetica,sans-Serif" font-size="14.00">TokenService</text>
-<polyline fill="none" stroke="black" points="17.42,-386.7 176.58,-386.7"/>
-<polyline fill="none" stroke="black" points="17.42,-361.9 176.58,-361.9"/>
-<text text-anchor="start" x="25.42" y="-345.3" font-family="Helvetica,sans-Serif" font-size="14.00">_VALID_TOKENS: dict</text>
-<polyline fill="none" stroke="black" points="17.42,-337.1 176.58,-337.1"/>
-<text text-anchor="start" x="37.08" y="-320.5" font-family="Helvetica,sans-Serif" font-size="14.00">resolve_role(token)</text>
-<text text-anchor="start" x="37.08" y="-303.7" font-family="Helvetica,sans-Serif" font-size="14.00">is_valid(token)</text>
+<polygon fill="none" stroke="black" points="17.42,-460.9 17.42,-576.9 176.58,-576.9 176.58,-460.9 17.42,-460.9"/>
+<text xml:space="preserve" text-anchor="start" x="54.2" y="-560.3" font-family="Helvetica,sans-Serif" font-size="14.00">TokenService</text>
+<polyline fill="none" stroke="black" points="17.42,-552.1 176.58,-552.1"/>
+<polyline fill="none" stroke="black" points="17.42,-527.3 176.58,-527.3"/>
+<text xml:space="preserve" text-anchor="start" x="25.42" y="-510.7" font-family="Helvetica,sans-Serif" font-size="14.00">_VALID_TOKENS: dict</text>
+<polyline fill="none" stroke="black" points="17.42,-502.5 176.58,-502.5"/>
+<text xml:space="preserve" text-anchor="start" x="37.08" y="-485.9" font-family="Helvetica,sans-Serif" font-size="14.00">resolve_role(token)</text>
+<text xml:space="preserve" text-anchor="start" x="37.08" y="-469.1" font-family="Helvetica,sans-Serif" font-size="14.00">is_valid(token)</text>
 </g>
 <!-- app.services.auth_service.AuthService&#45;&gt;app.services.token_service.TokenService -->
-<g id="edge8" class="edge">
+<g id="edge16" class="edge">
 <title>app.services.auth_service.AuthService-&gt;app.services.token_service.TokenService</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M98.59,-529.29C98.31,-498.58 97.94,-457.33 97.62,-422.62"/>
-<polygon fill="black" stroke="black" points="97.53,-412.82 102.12,-422.78 97.57,-416.6 97.62,-422.82 97.62,-422.82 97.62,-422.82 97.57,-416.6 93.12,-422.86 97.53,-412.82"/>
-<text text-anchor="middle" x="133.04" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> validates token</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M98.5,-652.83C98.28,-633.3 98.01,-609.97 97.77,-588.34"/>
+<polygon fill="black" stroke="black" points="97.66,-578.44 102.27,-588.39 97.7,-582.22 97.77,-588.44 97.77,-588.44 97.77,-588.44 97.7,-582.22 93.27,-588.49 97.66,-578.44"/>
+<text xml:space="preserve" text-anchor="middle" x="132.92" y="-617.2" font-family="Helvetica,sans-Serif" font-size="10.00"> validates token</text>
 </g>
-<!-- app.db.users -->
-<g id="node12" class="node">
-<title>app.db.users</title>
-<polygon fill="none" stroke="black" points="770.99,-257.5 770.99,-449.5 959.01,-449.5 959.01,-257.5 770.99,-257.5"/>
-<text text-anchor="start" x="818.32" y="-432.9" font-family="Helvetica,sans-Serif" font-size="14.00">users (Module)</text>
-<polyline fill="none" stroke="black" points="770.99,-424.7 959.01,-424.7"/>
-<text text-anchor="start" x="822.99" y="-391.3" font-family="Helvetica,sans-Serif" font-size="14.00">USER_ID: str</text>
-<text text-anchor="start" x="822.99" y="-374.5" font-family="Helvetica,sans-Serif" font-size="14.00">NAME: str</text>
-<text text-anchor="start" x="822.99" y="-357.7" font-family="Helvetica,sans-Serif" font-size="14.00">EMAIL: str</text>
-<text text-anchor="start" x="822.99" y="-340.9" font-family="Helvetica,sans-Serif" font-size="14.00">ROLE: str</text>
-<polyline fill="none" stroke="black" points="770.99,-332.7 959.01,-332.7"/>
-<text text-anchor="start" x="778.99" y="-316.1" font-family="Helvetica,sans-Serif" font-size="14.00">get_user_by_email(email)</text>
-<text text-anchor="start" x="778.99" y="-299.3" font-family="Helvetica,sans-Serif" font-size="14.00">get_user_by_phone(phone)</text>
-<text text-anchor="start" x="778.99" y="-282.5" font-family="Helvetica,sans-Serif" font-size="14.00">create_user(user)</text>
-<text text-anchor="start" x="778.99" y="-265.7" font-family="Helvetica,sans-Serif" font-size="14.00">build_user_document(...)</text>
+<!-- app.db.users.users_module -->
+<g id="node16" class="node">
+<title>app.db.users.users_module</title>
+<polygon fill="none" stroke="black" points="1172.99,-464.9 1172.99,-572.9 1361.01,-572.9 1361.01,-464.9 1172.99,-464.9"/>
+<text xml:space="preserve" text-anchor="start" x="1220.32" y="-556.3" font-family="Helvetica,sans-Serif" font-size="14.00">users (Module)</text>
+<polyline fill="none" stroke="black" points="1172.99,-548.1 1361.01,-548.1"/>
+<polyline fill="none" stroke="black" points="1172.99,-523.3 1361.01,-523.3"/>
+<text xml:space="preserve" text-anchor="start" x="1180.99" y="-506.7" font-family="Helvetica,sans-Serif" font-size="14.00">get_user_by_email(email)</text>
+<text xml:space="preserve" text-anchor="start" x="1180.99" y="-489.9" font-family="Helvetica,sans-Serif" font-size="14.00">get_user_by_phone(phone)</text>
+<text xml:space="preserve" text-anchor="start" x="1180.99" y="-473.1" font-family="Helvetica,sans-Serif" font-size="14.00">create_user(User)</text>
 </g>
-<!-- app.services.auth_service.AuthService&#45;&gt;app.db.users -->
-<g id="edge10" class="edge">
-<title>app.services.auth_service.AuthService-&gt;app.db.users</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M168.29,-529.28C175.43,-525.96 182.73,-523.04 190,-520.8 311.1,-483.46 646.22,-540.59 759,-482.8 771.7,-476.29 783.45,-467.52 794.14,-457.59"/>
-<polygon fill="black" stroke="black" points="801.24,-450.65 797.24,-460.86 798.53,-453.29 794.09,-457.64 794.09,-457.64 794.09,-457.64 798.53,-453.29 790.94,-454.43 801.24,-450.65"/>
-<text text-anchor="middle" x="747.78" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> calls</text>
-</g>
-<!-- app.services.booking_service.BookingService&#45;&gt;app.db.users -->
+<!-- app.services.auth_service.AuthService&#45;&gt;app.db.users.users_module -->
 <g id="edge11" class="edge">
-<title>app.services.booking_service.BookingService-&gt;app.db.users</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M747.54,-567.31C841.32,-558.84 964.92,-540.66 996,-502.8 1014.89,-479.78 971.39,-485.05 968,-482.8 957.31,-475.7 947.2,-467.14 937.8,-457.85"/>
-<polygon fill="black" stroke="black" points="930.92,-450.77 941.11,-454.81 933.55,-453.48 937.89,-457.94 937.89,-457.94 937.89,-457.94 933.55,-453.48 934.66,-461.08 930.92,-450.77"/>
-<text text-anchor="middle" x="1018.25" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> fetches</text>
+<title>app.services.auth_service.AuthService-&gt;app.db.users.users_module</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M167.71,-652.71C175.03,-649.33 182.53,-646.39 190,-644.2 397.86,-583.25 961.91,-684.17 1164,-606.2 1179.62,-600.17 1194.58,-590.74 1208.02,-580.29"/>
+<polygon fill="black" stroke="black" points="1215.68,-574.07 1210.76,-583.86 1212.75,-576.45 1207.92,-580.37 1207.92,-580.37 1207.92,-580.37 1212.75,-576.45 1205.08,-576.88 1215.68,-574.07"/>
 </g>
 <!-- app.db.fitness_classes -->
-<g id="node13" class="node">
+<g id="node17" class="node">
 <title>app.db.fitness_classes</title>
-<polygon fill="none" stroke="black" points="977.24,-257.5 977.24,-449.5 1264.76,-449.5 1264.76,-257.5 977.24,-257.5"/>
-<text text-anchor="start" x="1043.97" y="-432.9" font-family="Helvetica,sans-Serif" font-size="14.00">fitness_classes (Module)</text>
-<polyline fill="none" stroke="black" points="977.24,-424.7 1264.76,-424.7"/>
-<text text-anchor="start" x="985.24" y="-391.3" font-family="Helvetica,sans-Serif" font-size="14.00">CLASS_ID: str</text>
-<text text-anchor="start" x="985.24" y="-374.5" font-family="Helvetica,sans-Serif" font-size="14.00">CAPACITY: int</text>
-<text text-anchor="start" x="985.24" y="-357.7" font-family="Helvetica,sans-Serif" font-size="14.00">AVAILABLE_SPOTS: int</text>
-<text text-anchor="start" x="985.24" y="-340.9" font-family="Helvetica,sans-Serif" font-size="14.00">RECURRENCE_PATTERN: str &lt;&lt;Feat 6&gt;&gt;</text>
-<polyline fill="none" stroke="black" points="977.24,-332.7 1264.76,-332.7"/>
-<text text-anchor="start" x="1009.33" y="-316.1" font-family="Helvetica,sans-Serif" font-size="14.00">get_class_by_class_id(class_id)</text>
-<text text-anchor="start" x="1009.33" y="-299.3" font-family="Helvetica,sans-Serif" font-size="14.00">decrement_available_spot(class_id)</text>
-<text text-anchor="start" x="1009.33" y="-282.5" font-family="Helvetica,sans-Serif" font-size="14.00">create_fitness_class(fitness_class)</text>
-<text text-anchor="start" x="1009.33" y="-265.7" font-family="Helvetica,sans-Serif" font-size="14.00">class_exists(...)</text>
+<polygon fill="none" stroke="black" points="1073.24,-223.9 1073.24,-399.1 1360.76,-399.1 1360.76,-223.9 1073.24,-223.9"/>
+<text xml:space="preserve" text-anchor="start" x="1139.97" y="-382.5" font-family="Helvetica,sans-Serif" font-size="14.00">fitness_classes (Module)</text>
+<polyline fill="none" stroke="black" points="1073.24,-374.3 1360.76,-374.3"/>
+<text xml:space="preserve" text-anchor="start" x="1081.24" y="-340.9" font-family="Helvetica,sans-Serif" font-size="14.00">CLASS_ID: str</text>
+<text xml:space="preserve" text-anchor="start" x="1081.24" y="-324.1" font-family="Helvetica,sans-Serif" font-size="14.00">CAPACITY: int</text>
+<text xml:space="preserve" text-anchor="start" x="1081.24" y="-307.3" font-family="Helvetica,sans-Serif" font-size="14.00">AVAILABLE_SPOTS: int</text>
+<text xml:space="preserve" text-anchor="start" x="1081.24" y="-290.5" font-family="Helvetica,sans-Serif" font-size="14.00">RECURRENCE_PATTERN: str &lt;&lt;Feat 6&gt;&gt;</text>
+<polyline fill="none" stroke="black" points="1073.24,-282.3 1360.76,-282.3"/>
+<text xml:space="preserve" text-anchor="start" x="1105.33" y="-265.7" font-family="Helvetica,sans-Serif" font-size="14.00">get_class_by_class_id(class_id)</text>
+<text xml:space="preserve" text-anchor="start" x="1105.33" y="-248.9" font-family="Helvetica,sans-Serif" font-size="14.00">decrement_available_spot(class_id)</text>
+<text xml:space="preserve" text-anchor="start" x="1105.33" y="-232.1" font-family="Helvetica,sans-Serif" font-size="14.00">create_fitness_class(fitness_class)</text>
 </g>
 <!-- app.services.booking_service.BookingService&#45;&gt;app.db.fitness_classes -->
 <g id="edge12" class="edge">
 <title>app.services.booking_service.BookingService-&gt;app.db.fitness_classes</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M747.22,-565.42C850.21,-555.3 994.16,-535.74 1040,-502.8 1055.88,-491.39 1068.98,-475.87 1079.68,-459.15"/>
-<polygon fill="black" stroke="black" points="1084.74,-450.8 1083.4,-461.68 1082.78,-454.03 1079.56,-459.35 1079.56,-459.35 1079.56,-459.35 1082.78,-454.03 1075.71,-457.01 1084.74,-450.8"/>
-<text text-anchor="middle" x="1094.72" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> checks &amp; updates</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M747.34,-695.44C949.41,-690.17 1359.74,-673.68 1403,-626.2 1465.44,-557.67 1449.73,-497.67 1403,-417.6 1394.33,-402.74 1382.7,-389.82 1369.46,-378.62"/>
+<polygon fill="black" stroke="black" points="1361.98,-372.63 1372.59,-375.36 1364.93,-374.99 1369.78,-378.88 1369.78,-378.88 1369.78,-378.88 1364.93,-374.99 1366.97,-382.39 1361.98,-372.63"/>
 </g>
 <!-- app.db.bookings -->
-<g id="node14" class="node">
+<g id="node18" class="node">
 <title>app.db.bookings</title>
-<polygon fill="none" stroke="black" points="941.29,-16.5 941.29,-208.5 1264.71,-208.5 1264.71,-16.5 941.29,-16.5"/>
-<text text-anchor="start" x="1045.41" y="-191.9" font-family="Helvetica,sans-Serif" font-size="14.00">bookings (Module)</text>
-<polyline fill="none" stroke="black" points="941.29,-183.7 1264.71,-183.7"/>
-<text text-anchor="start" x="1041.54" y="-150.3" font-family="Helvetica,sans-Serif" font-size="14.00">BookingUser (DTO)</text>
-<text text-anchor="start" x="1041.54" y="-133.5" font-family="Helvetica,sans-Serif" font-size="14.00">BOOKING_ID: str</text>
-<text text-anchor="start" x="1041.54" y="-116.7" font-family="Helvetica,sans-Serif" font-size="14.00">CLASS_ID: str</text>
-<text text-anchor="start" x="1041.54" y="-99.9" font-family="Helvetica,sans-Serif" font-size="14.00">USER_ID: str</text>
-<polyline fill="none" stroke="black" points="941.29,-91.7 1264.71,-91.7"/>
-<text text-anchor="start" x="949.29" y="-75.1" font-family="Helvetica,sans-Serif" font-size="14.00">build_booking_document(class_id, booking_user)</text>
-<text text-anchor="start" x="949.29" y="-58.3" font-family="Helvetica,sans-Serif" font-size="14.00">create_booking(booking)</text>
-<text text-anchor="start" x="949.29" y="-41.5" font-family="Helvetica,sans-Serif" font-size="14.00">booking_exists_for_user(...)</text>
-<text text-anchor="start" x="949.29" y="-24.7" font-family="Helvetica,sans-Serif" font-size="14.00">list_bookings_by_class(class_id)</text>
+<polygon fill="none" stroke="black" points="1037.29,-16.5 1037.29,-174.9 1360.71,-174.9 1360.71,-16.5 1037.29,-16.5"/>
+<text xml:space="preserve" text-anchor="start" x="1141.41" y="-158.3" font-family="Helvetica,sans-Serif" font-size="14.00">bookings (Module)</text>
+<polyline fill="none" stroke="black" points="1037.29,-150.1 1360.71,-150.1"/>
+<text xml:space="preserve" text-anchor="start" x="1137.54" y="-116.7" font-family="Helvetica,sans-Serif" font-size="14.00">BookingUser (DTO)</text>
+<text xml:space="preserve" text-anchor="start" x="1137.54" y="-99.9" font-family="Helvetica,sans-Serif" font-size="14.00">BOOKING_ID: str</text>
+<text xml:space="preserve" text-anchor="start" x="1137.54" y="-83.1" font-family="Helvetica,sans-Serif" font-size="14.00">CLASS_ID: str</text>
+<text xml:space="preserve" text-anchor="start" x="1137.54" y="-66.3" font-family="Helvetica,sans-Serif" font-size="14.00">USER_ID: str</text>
+<polyline fill="none" stroke="black" points="1037.29,-58.1 1360.71,-58.1"/>
+<text xml:space="preserve" text-anchor="start" x="1045.29" y="-41.5" font-family="Helvetica,sans-Serif" font-size="14.00">build_booking_document(class_id, booking_user)</text>
+<text xml:space="preserve" text-anchor="start" x="1045.29" y="-24.7" font-family="Helvetica,sans-Serif" font-size="14.00">create_booking(booking)</text>
 </g>
 <!-- app.services.booking_service.BookingService&#45;&gt;app.db.bookings -->
 <g id="edge13" class="edge">
 <title>app.services.booking_service.BookingService-&gt;app.db.bookings</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M747.45,-568.75C946.27,-557.69 1345.34,-529.85 1387,-482.8 1453.53,-407.67 1439.58,-342.48 1387,-257 1361.24,-215.11 1319.05,-185.01 1274.98,-163.55"/>
-<polygon fill="black" stroke="black" points="1266.05,-159.35 1277.02,-159.54 1269.48,-160.96 1275.1,-163.61 1275.1,-163.61 1275.1,-163.61 1269.48,-160.96 1273.18,-167.68 1266.05,-159.35"/>
-<text text-anchor="middle" x="1446.26" y="-350.5" font-family="Helvetica,sans-Serif" font-size="10.00"> writes</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M747.58,-696.23C934.98,-692.32 1304.02,-678.08 1422,-626.2 1434.1,-620.88 1438.65,-618.28 1444,-606.2 1514.1,-447.73 1472.29,-363.27 1370,-223.4 1359.24,-208.69 1346.28,-194.95 1332.37,-182.34"/>
+<polygon fill="black" stroke="black" points="1324.99,-175.86 1335.47,-179.08 1327.83,-178.35 1332.5,-182.46 1332.5,-182.46 1332.5,-182.46 1327.83,-178.35 1329.53,-185.84 1324.99,-175.86"/>
 </g>
 <!-- app.services.email_reminders -->
 <g id="node11" class="node">
 <title>app.services.email_reminders</title>
-<polygon fill="none" stroke="black" points="194.41,-282.7 194.41,-424.3 539.59,-424.3 539.59,-282.7 194.41,-282.7"/>
-<text text-anchor="start" x="285.69" y="-407.7" font-family="Helvetica,sans-Serif" font-size="14.00">email_reminders (Module)</text>
-<polyline fill="none" stroke="black" points="194.41,-399.5 539.59,-399.5"/>
-<polyline fill="none" stroke="black" points="194.41,-374.7 539.59,-374.7"/>
-<text text-anchor="start" x="202.41" y="-358.1" font-family="Helvetica,sans-Serif" font-size="14.00">send_class_reminders(..., sender_email) &lt;&lt;Feat 7&gt;&gt;</text>
-<text text-anchor="start" x="202.41" y="-341.3" font-family="Helvetica,sans-Serif" font-size="14.00">_build_reminder_message()</text>
-<text text-anchor="start" x="202.41" y="-324.5" font-family="Helvetica,sans-Serif" font-size="14.00">_sendgrid_api_key()</text>
-<text text-anchor="start" x="202.41" y="-307.7" font-family="Helvetica,sans-Serif" font-size="14.00">_sendgrid_send_email()</text>
-<text text-anchor="start" x="202.41" y="-290.9" font-family="Helvetica,sans-Serif" font-size="14.00">_resolve_sender_email()</text>
+<polygon fill="none" stroke="black" points="194.41,-448.1 194.41,-589.7 539.59,-589.7 539.59,-448.1 194.41,-448.1"/>
+<text xml:space="preserve" text-anchor="start" x="285.69" y="-573.1" font-family="Helvetica,sans-Serif" font-size="14.00">email_reminders (Module)</text>
+<polyline fill="none" stroke="black" points="194.41,-564.9 539.59,-564.9"/>
+<polyline fill="none" stroke="black" points="194.41,-540.1 539.59,-540.1"/>
+<text xml:space="preserve" text-anchor="start" x="202.41" y="-523.5" font-family="Helvetica,sans-Serif" font-size="14.00">send_class_reminders(..., sender_email) &lt;&lt;Feat 7&gt;&gt;</text>
+<text xml:space="preserve" text-anchor="start" x="202.41" y="-506.7" font-family="Helvetica,sans-Serif" font-size="14.00">_build_reminder_message()</text>
+<text xml:space="preserve" text-anchor="start" x="202.41" y="-489.9" font-family="Helvetica,sans-Serif" font-size="14.00">_sendgrid_api_key()</text>
+<text xml:space="preserve" text-anchor="start" x="202.41" y="-473.1" font-family="Helvetica,sans-Serif" font-size="14.00">_sendgrid_send_email()</text>
+<text xml:space="preserve" text-anchor="start" x="202.41" y="-456.3" font-family="Helvetica,sans-Serif" font-size="14.00">_resolve_sender_email()</text>
 </g>
 <!-- app.services.fitness_class_service.FitnessClassService&#45;&gt;app.services.email_reminders -->
-<g id="edge9" class="edge">
+<g id="edge15" class="edge">
 <title>app.services.fitness_class_service.FitnessClassService-&gt;app.services.email_reminders</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M356.41,-520.81C358.04,-495.23 360.02,-464.06 361.83,-435.65"/>
-<polygon fill="black" stroke="black" points="362.46,-425.72 366.32,-435.98 362.22,-429.49 361.83,-435.7 361.83,-435.7 361.83,-435.7 362.22,-429.49 357.34,-435.41 362.46,-425.72"/>
-<text text-anchor="middle" x="396.84" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> delegates emails</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M357.2,-644.35C358.27,-630.74 359.45,-615.8 360.6,-601.13"/>
+<polygon fill="black" stroke="black" points="361.38,-591.22 365.09,-601.54 361.09,-594.99 360.6,-601.19 360.6,-601.19 360.6,-601.19 361.09,-594.99 356.11,-600.83 361.38,-591.22"/>
 </g>
 <!-- app.services.fitness_class_service.FitnessClassService&#45;&gt;app.db.fitness_classes -->
 <g id="edge14" class="edge">
 <title>app.services.fitness_class_service.FitnessClassService-&gt;app.db.fitness_classes</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M506.74,-522.73C509.84,-522.05 512.93,-521.41 516,-520.8 713.78,-481.75 782.12,-560.85 968,-482.8 984.43,-475.9 1000.43,-466.6 1015.52,-456.14"/>
-<polygon fill="black" stroke="black" points="1023.3,-450.56 1017.79,-460.04 1020.22,-452.76 1015.17,-456.39 1015.17,-456.39 1015.17,-456.39 1020.22,-452.76 1012.55,-452.73 1023.3,-450.56"/>
-<text text-anchor="middle" x="974.59" y="-493.8" font-family="Helvetica,sans-Serif" font-size="10.00"> reads/writes</text>
-</g>
-<!-- app.services.fitness_class_service.FitnessClassService&#45;&gt;app.db.bookings -->
-<g id="edge15" class="edge">
-<title>app.services.fitness_class_service.FitnessClassService-&gt;app.db.bookings</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M506.71,-522.58C509.82,-521.95 512.92,-521.35 516,-520.8 730.96,-482.37 791.97,-540.85 1007,-502.8 1024.02,-499.79 1026.97,-493.8 1044,-490.8 1056.59,-488.58 1265.12,-492 1274,-482.8 1308.86,-446.71 1295.2,-302.48 1274,-257 1267.35,-242.73 1258.5,-229.38 1248.32,-217.01"/>
-<polygon fill="black" stroke="black" points="1241.87,-209.52 1251.81,-214.16 1244.34,-212.39 1248.4,-217.1 1248.4,-217.1 1248.4,-217.1 1244.34,-212.39 1244.99,-220.03 1241.87,-209.52"/>
-<text text-anchor="middle" x="1336.19" y="-350.5" font-family="Helvetica,sans-Serif" font-size="10.00"> fetches attendees</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M506.71,-646.01C509.83,-645.37 512.92,-644.76 516,-644.2 562.72,-635.66 1337.17,-640.52 1370,-606.2 1421.18,-552.69 1401.46,-506.63 1370,-439.6 1364.72,-428.36 1357.91,-417.76 1350.1,-407.86"/>
+<polygon fill="black" stroke="black" points="1343.76,-400.27 1353.63,-405.07 1346.19,-403.18 1350.17,-407.95 1350.17,-407.95 1350.17,-407.95 1346.19,-403.18 1346.71,-410.83 1343.76,-400.27"/>
 </g>
 <!-- External.SendGridAPI -->
-<g id="node15" class="node">
+<g id="node19" class="node">
 <title>External.SendGridAPI</title>
-<polygon fill="none" stroke="black" points="310.76,-75.3 310.76,-149.7 423.24,-149.7 423.24,-75.3 310.76,-75.3"/>
-<text text-anchor="start" x="324.2" y="-133.1" font-family="Helvetica,sans-Serif" font-size="14.00">SendGrid API</text>
-<polyline fill="none" stroke="black" points="310.76,-124.9 423.24,-124.9"/>
-<polyline fill="none" stroke="black" points="310.76,-100.1 423.24,-100.1"/>
-<text text-anchor="start" x="318.76" y="-83.5" font-family="Helvetica,sans-Serif" font-size="14.00">send(message)</text>
+<polygon fill="none" stroke="black" points="310.76,-274.3 310.76,-348.7 423.24,-348.7 423.24,-274.3 310.76,-274.3"/>
+<text xml:space="preserve" text-anchor="start" x="324.2" y="-332.1" font-family="Helvetica,sans-Serif" font-size="14.00">SendGrid API</text>
+<polyline fill="none" stroke="black" points="310.76,-323.9 423.24,-323.9"/>
+<polyline fill="none" stroke="black" points="310.76,-299.1 423.24,-299.1"/>
+<text xml:space="preserve" text-anchor="start" x="318.76" y="-282.5" font-family="Helvetica,sans-Serif" font-size="14.00">send(message)</text>
 </g>
 <!-- app.services.email_reminders&#45;&gt;External.SendGridAPI -->
-<g id="edge16" class="edge">
+<g id="edge17" class="edge">
 <title>app.services.email_reminders-&gt;External.SendGridAPI</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M367,-282.41C367,-243.26 367,-195.52 367,-160.79"/>
-<polygon fill="black" stroke="black" points="367,-151.22 371.5,-161.22 367,-155 367,-161.22 367,-161.22 367,-161.22 367,-155 362.5,-161.22 367,-151.22"/>
-<text text-anchor="middle" x="396.45" y="-230" font-family="Helvetica,sans-Serif" font-size="10.00"> HTTP POST</text>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M367,-447.79C367,-418.94 367,-386.26 367,-360.24"/>
+<polygon fill="black" stroke="black" points="367,-350.39 371.5,-360.39 367,-354.17 367,-360.39 367,-360.39 367,-360.39 367,-354.17 362.5,-360.39 367,-350.39"/>
+<text xml:space="preserve" text-anchor="middle" x="396.45" y="-420.6" font-family="Helvetica,sans-Serif" font-size="10.00"> HTTP POST</text>
 </g>
-<!-- app.db.users&#45;&gt;app.db.bookings -->
+<!-- app.db.users.User -->
+<g id="node12" class="node">
+<title>app.db.users.User</title>
+<polygon fill="none" stroke="black" points="926.94,-240.7 926.94,-382.3 1037.06,-382.3 1037.06,-240.7 926.94,-240.7"/>
+<text xml:space="preserve" text-anchor="start" x="934.94" y="-365.7" font-family="Helvetica,sans-Serif" font-size="14.00">User (Abstract)</text>
+<polyline fill="none" stroke="black" points="926.94,-357.5 1037.06,-357.5"/>
+<text xml:space="preserve" text-anchor="start" x="939.99" y="-324.1" font-family="Helvetica,sans-Serif" font-size="14.00">USER_ID: str</text>
+<text xml:space="preserve" text-anchor="start" x="939.99" y="-307.3" font-family="Helvetica,sans-Serif" font-size="14.00">NAME: str</text>
+<text xml:space="preserve" text-anchor="start" x="939.99" y="-290.5" font-family="Helvetica,sans-Serif" font-size="14.00">EMAIL: str</text>
+<text xml:space="preserve" text-anchor="start" x="939.99" y="-273.7" font-family="Helvetica,sans-Serif" font-size="14.00">PHONE: str</text>
+<polyline fill="none" stroke="black" points="926.94,-265.5 1037.06,-265.5"/>
+<text xml:space="preserve" text-anchor="start" x="980.06" y="-248.9" font-family="Helvetica,sans-Serif" font-size="14.00"> </text>
+</g>
+<!-- app.db.users.User&#45;&gt;app.db.bookings -->
+<g id="edge4" class="edge">
+<title>app.db.users.User-&gt;app.db.bookings</title>
+<path fill="none" stroke="black" d="M1037.54,-250.53C1046.3,-241.35 1055.33,-232.06 1064,-223.4 1079.81,-207.62 1096.98,-191.06 1113.62,-175.32"/>
+<text xml:space="preserve" text-anchor="middle" x="1102.43" y="-196.4" font-family="Helvetica,sans-Serif" font-size="10.00"> has</text>
+<text xml:space="preserve" text-anchor="middle" x="1104.44" y="-195.58" font-family="Helvetica,sans-Serif" font-size="10.00">0..n</text>
+<text xml:space="preserve" text-anchor="middle" x="1045.56" y="-223.85" font-family="Helvetica,sans-Serif" font-size="10.00">1</text>
+</g>
+<!-- app.db.users.Member -->
+<g id="node13" class="node">
+<title>app.db.users.Member</title>
+<polygon fill="none" stroke="black" points="915.32,-481.7 915.32,-556.1 1010.68,-556.1 1010.68,-481.7 915.32,-481.7"/>
+<text xml:space="preserve" text-anchor="start" x="937.33" y="-539.5" font-family="Helvetica,sans-Serif" font-size="14.00">Member</text>
+<polyline fill="none" stroke="black" points="915.32,-531.3 1010.68,-531.3"/>
+<polyline fill="none" stroke="black" points="915.32,-506.5 1010.68,-506.5"/>
+<text xml:space="preserve" text-anchor="start" x="923.32" y="-489.9" font-family="Helvetica,sans-Serif" font-size="14.00">book_class()</text>
+</g>
+<!-- app.db.users.Member&#45;&gt;app.db.users.User -->
 <g id="edge1" class="edge">
-<title>app.db.users-&gt;app.db.bookings</title>
-<path fill="none" stroke="black" d="M959.41,-257.7C975.37,-241.67 991.95,-225.02 1007.93,-208.97"/>
-<text text-anchor="middle" x="993.45" y="-230" font-family="Helvetica,sans-Serif" font-size="10.00"> has</text>
-<text text-anchor="middle" x="999.43" y="-229.48" font-family="Helvetica,sans-Serif" font-size="10.00">0..n</text>
-<text text-anchor="middle" x="967.91" y="-231.19" font-family="Helvetica,sans-Serif" font-size="10.00">1</text>
+<title>app.db.users.Member-&gt;app.db.users.User</title>
+<path fill="none" stroke="black" d="M966.35,-481.65C968.61,-457.24 971.68,-424.05 974.5,-393.53"/>
+<polygon fill="none" stroke="black" points="977.96,-394.22 975.39,-383.94 970.99,-393.57 977.96,-394.22"/>
+<text xml:space="preserve" text-anchor="middle" x="989.44" y="-420.6" font-family="Helvetica,sans-Serif" font-size="10.00"> inherits</text>
+</g>
+<!-- app.db.users.Trainer -->
+<g id="node14" class="node">
+<title>app.db.users.Trainer</title>
+<polygon fill="none" stroke="black" points="1029.15,-473.3 1029.15,-564.5 1154.85,-564.5 1154.85,-473.3 1029.15,-473.3"/>
+<text xml:space="preserve" text-anchor="start" x="1069.83" y="-547.9" font-family="Helvetica,sans-Serif" font-size="14.00">Trainer</text>
+<polyline fill="none" stroke="black" points="1029.15,-539.7 1154.85,-539.7"/>
+<polyline fill="none" stroke="black" points="1029.15,-514.9 1154.85,-514.9"/>
+<text xml:space="preserve" text-anchor="start" x="1037.15" y="-498.3" font-family="Helvetica,sans-Serif" font-size="14.00">create_class()</text>
+<text xml:space="preserve" text-anchor="start" x="1037.15" y="-481.5" font-family="Helvetica,sans-Serif" font-size="14.00">send_reminders()</text>
+</g>
+<!-- app.db.users.Trainer&#45;&gt;app.db.users.User -->
+<g id="edge2" class="edge">
+<title>app.db.users.Trainer-&gt;app.db.users.User</title>
+<path fill="none" stroke="black" d="M1067.86,-472.82C1055.24,-449.26 1039.42,-419.72 1024.81,-392.44"/>
+<polygon fill="none" stroke="black" points="1028.01,-391 1020.21,-383.84 1021.84,-394.31 1028.01,-391"/>
+<text xml:space="preserve" text-anchor="middle" x="1061.09" y="-420.6" font-family="Helvetica,sans-Serif" font-size="10.00"> inherits</text>
+</g>
+<!-- app.db.users.Admin -->
+<g id="node15" class="node">
+<title>app.db.users.Admin</title>
+<polygon fill="none" stroke="black" points="771.15,-473.3 771.15,-564.5 896.85,-564.5 896.85,-473.3 771.15,-473.3"/>
+<text xml:space="preserve" text-anchor="start" x="814.16" y="-547.9" font-family="Helvetica,sans-Serif" font-size="14.00">Admin</text>
+<polyline fill="none" stroke="black" points="771.15,-539.7 896.85,-539.7"/>
+<polyline fill="none" stroke="black" points="771.15,-514.9 896.85,-514.9"/>
+<text xml:space="preserve" text-anchor="start" x="779.15" y="-498.3" font-family="Helvetica,sans-Serif" font-size="14.00">create_class()</text>
+<text xml:space="preserve" text-anchor="start" x="779.15" y="-481.5" font-family="Helvetica,sans-Serif" font-size="14.00">send_reminders()</text>
+</g>
+<!-- app.db.users.Admin&#45;&gt;app.db.users.User -->
+<g id="edge3" class="edge">
+<title>app.db.users.Admin-&gt;app.db.users.User</title>
+<path fill="none" stroke="black" d="M866.48,-472.82C883.6,-449.06 905.11,-419.21 924.92,-391.72"/>
+<polygon fill="none" stroke="black" points="927.67,-393.89 930.67,-383.73 921.99,-389.8 927.67,-393.89"/>
+<text xml:space="preserve" text-anchor="middle" x="921.07" y="-420.6" font-family="Helvetica,sans-Serif" font-size="10.00"> inherits</text>
 </g>
 <!-- app.db.fitness_classes&#45;&gt;app.db.bookings -->
-<g id="edge2" class="edge">
+<g id="edge5" class="edge">
 <title>app.db.fitness_classes-&gt;app.db.bookings</title>
-<path fill="none" stroke="black" d="M1113.81,-257.01C1112.61,-241.15 1111.37,-224.7 1110.18,-208.84"/>
-<text text-anchor="middle" x="1121.45" y="-230" font-family="Helvetica,sans-Serif" font-size="10.00"> has</text>
-<text text-anchor="middle" x="1122.42" y="-227.64" font-family="Helvetica,sans-Serif" font-size="10.00">0..n</text>
-<text text-anchor="middle" x="1101.57" y="-232.21" font-family="Helvetica,sans-Serif" font-size="10.00">1</text>
+<path fill="none" stroke="black" d="M1209.68,-223.54C1208.34,-207.59 1206.94,-191.02 1205.62,-175.32"/>
+<text xml:space="preserve" text-anchor="middle" x="1217.45" y="-196.4" font-family="Helvetica,sans-Serif" font-size="10.00"> has</text>
+<text xml:space="preserve" text-anchor="middle" x="1218.05" y="-194.02" font-family="Helvetica,sans-Serif" font-size="10.00">0..n</text>
+<text xml:space="preserve" text-anchor="middle" x="1197.25" y="-198.85" font-family="Helvetica,sans-Serif" font-size="10.00">1</text>
 </g>
 </g>
 </svg>

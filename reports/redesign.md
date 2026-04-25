@@ -212,3 +212,11 @@ The refactored Service Layer cleanly accommodates the new feature requirements:
 2. We added new service nodes for `AuthService`, `BookingService`, `FitnessClassService`, and `TokenService`.
 3. We added delegation arrows moving strictly from API $\rightarrow$ Service $\rightarrow$ Database.
 4. We added the `BookingUser (DTO)` as an internal structure within the `bookings` database module.
+
+### 6. Implementation of User Inheritance (Addressing Sprint 3A Feedback)
+* previously, the system originally relied on a single `User` class/dictionary that used a `role` string attribute to differentiate between users. This required business logic to constantly rely on `if/else` checks (e.g., `if user.role == 'trainer'`), which violates the Open/Closed Principle and makes the code difficult to extend.
+* So now following the feedback, the domain model was refactored to utilize Inheritance and Polymorphism. 
+  * A base `User` abstraction holds shared attributes (like `email`, `name`, and `phone`).
+  * Specialized subclasses were introduced: `Member`, `Trainer`, and `Admin`.
+  * Distinct behaviors and responsibilities are now encapsulated within their respective classes. For example, the `Trainer` class now inherently models the ability to `create_class()` and `send_reminders()`, while the `Member` class dictates the ability to `book_class()`.
+  * This is reflected in the new `Database & Domain Layer` cluster of the class diagram, using the standard UML "empty arrowhead" to denote that `Member`, `Trainer`, and `Admin` directly inherit from `User`.
