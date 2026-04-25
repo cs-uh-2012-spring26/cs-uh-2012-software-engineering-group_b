@@ -130,7 +130,7 @@ def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
         CAPACITY: 20,
         TRAINER_NAME: "Alex Trainer"
     })
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR and response.json[MSG] == "Missing or invalid authorization header"
+    assert response.status_code == HTTPStatus.UNAUTHORIZED and response.json[MSG] == "Missing or invalid authorization header"
 
     # invalid credentials
     response = client.post("/classes/", json = {
@@ -139,7 +139,7 @@ def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
         CAPACITY: 20,
         TRAINER_NAME: "Alex Trainer"
     }, headers = {"Authorization": "Bearer fake-token"})
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR and response.json[MSG] == "Missing or invalid authorization header"
+    assert response.status_code == HTTPStatus.UNAUTHORIZED and response.json[MSG] == "Missing or invalid authorization header"
 
     # wrong credentials
     with app.app_context():
@@ -153,4 +153,4 @@ def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
         CAPACITY: 20,
         TRAINER_NAME: "Alex Trainer"
     }, headers = {"Authorization": f"Bearer {auth_member_token}"})
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR and response.json[MSG] == "role 'member' has insufficient permissions. require to be: ['admin', 'trainer']"
+    assert response.status_code == HTTPStatus.FORBIDDEN and response.json[MSG] == "role 'member' has insufficient permissions. require to be: ['admin', 'trainer']"

@@ -1,22 +1,16 @@
 """Auth endpoints for user registration with token validation."""
 from flask import request
 from flask_restx import Namespace, Resource, abort, fields
-import bcrypt
 from flask_jwt_extended import create_access_token
 from functools import wraps
 from http import HTTPStatus
-from app.db import DB
-from app.db.users import PASSWORD_HASH, build_user_document, create_user, get_user_by_email, get_user_by_phone
 
 from app.apis import MSG
+from app.exceptions import AppError
+from app.services.auth_service import AuthService
+from app.services.token_service import TokenService
 
 api = Namespace("auth", description="    Endpoints for logging in, registering, and validating token")
-
-# Example tokens
-VALID_TOKENS = {
-    "trainer-secret-123": "trainer",
-    "admin-secret-456": "admin",
-}
 
 # Models for Swagger
 register_model = api.model(
@@ -75,7 +69,7 @@ def validate_token(f):
 
         if token:
             # Validate token if provided
-            role = VALID_TOKENS.get(token)
+            role = TokenService.resolve_role(token)
             if not role:
                 abort(403, "Invalid or expired token")
         else:
@@ -101,31 +95,13 @@ class Register(Resource):
         """REGISTER NEW ACCOUNT: allowed for guests"""
         data = request.get_json()
         role = request.registration_role
-        email = data.get("email")
-        phone = data.get("phone")
-        password = data.get("password")
+        try:
+            created_user = AuthService.register_user(data=data, role=role)
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
 
-        # Reject duplicate accounts
-        if email and get_user_by_email(email) is not None:
-            return {MSG: "Email already registered"}, HTTPStatus.CONFLICT
-        if phone and get_user_by_phone(phone) is not None:
-            return {MSG: "Phone already registered"}, HTTPStatus.CONFLICT
-        
-        # Hash password with bcrypt (salt is generated automatically)
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        
-        # Build and create user document
-        user_doc = build_user_document(
-            name=data.get("name"),
-            email=data.get("email"),
-            password_hash=password_hash,
-            role=role,
-            phone=data.get("phone"),
-            birth_date=data.get("birth_date"),
-        )
-        
-        created_user = create_user(user_doc)
         user_id = created_user.get("user_id")
+        email = created_user.get("email")
         
         # Issue JWT access token for immediate use
         access_token = create_access_token(
@@ -152,11 +128,11 @@ class ValidateToken(Resource):
         """VALIDATE TOKEN: INTERNAL"""
         data = request.get_json()
         token = data.get("token")
-        
-        if not token or token not in VALID_TOKENS:
+
+        if not token or not TokenService.is_valid(token):
             return {"valid": False}, HTTPStatus.BAD_REQUEST
-        
-        return {"valid": True, "role": VALID_TOKENS[token]}, HTTPStatus.OK
+
+        return {"valid": True, "role": TokenService.resolve_role(token)}, HTTPStatus.OK
     
 
 @api.route('/login')
@@ -169,30 +145,10 @@ class Login(Resource):
     @api.response(HTTPStatus.NOT_FOUND, "user not found")
     def post(self):
         """LOG INTO ACCOUNT: allowed for members, trainers, and admins"""
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
-
-        # validate fields
-        if not email:
-            return {MSG: "email is required"}, HTTPStatus.BAD_REQUEST
-        if data.get("phone"):
-            return {MSG: "phone login is not supported; use email"}, HTTPStatus.BAD_REQUEST
-        # validate password
-        if not password:
-            return {
-                MSG: "password is required"
-            }, HTTPStatus.BAD_REQUEST
-        
-        
-        # get user associated with account
-        user = get_user_by_email(email)
-        if user is None:
-            return {MSG: "User not found!"}, HTTPStatus.NOT_FOUND 
-        
-        # verify that password hash matches
-        if not bcrypt.checkpw(password.encode('utf-8'), user.get(PASSWORD_HASH).encode('utf-8')):
-            return {MSG: "Login credentials and password do not match"}, HTTPStatus.BAD_REQUEST
+        try:
+            user = AuthService.login_user(request.get_json() or {})
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
         
         access_token = create_access_token(
             identity=user.get("email") or user.get("user_id"),

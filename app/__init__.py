@@ -8,6 +8,10 @@ from http import HTTPStatus
 from flask import Flask
 from flask_restx import Api
 from flask_jwt_extended import JWTManager
+from werkzeug.exceptions import HTTPException
+
+from app.apis import MSG
+from app.exceptions import AppError
 
 
 def create_app(test_config = None):
@@ -41,8 +45,16 @@ def create_app(test_config = None):
     api.add_namespace(booking_ns)
     api.add_namespace(auth)
 
+    @api.errorhandler(AppError)
+    def handle_application_error(error):
+        return {MSG: error.message}, error.status_code
+
+    @api.errorhandler(HTTPException)
+    def handle_http_error(error):
+        return {MSG: error.description}, error.code or HTTPStatus.BAD_REQUEST
+
     @api.errorhandler(Exception)
-    def handle_input_validation_error(error):
-        return {"message": str(error)}, HTTPStatus.INTERNAL_SERVER_ERROR
+    def handle_unexpected_error(_error):
+        return {MSG: "Internal server error"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
     return app
