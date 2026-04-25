@@ -15,6 +15,8 @@ from app.db.fitness_classes import (
     DATETIME,
     TITLE,
     TRAINER_NAME,
+    RECURRENCE_TYPE,
+    RECURRENCE_END_DATE
 )
 from app.exceptions import AppError
 from app.services.fitness_class_service import FitnessClassService
@@ -42,6 +44,15 @@ class_model = api.model(
         CAPACITY: fields.Integer(example=_EXAMPLE_CLASS[CAPACITY]),
         AVAILABLE_SPOTS: fields.Integer(example=_EXAMPLE_CLASS[AVAILABLE_SPOTS]),
         TRAINER_NAME: fields.String(example=_EXAMPLE_CLASS[TRAINER_NAME]),
+        RECURRENCE_TYPE: fields.String(
+            enum=["one_time", "daily", "weekly"],
+            example="weekly",
+            required=False
+        ),
+        RECURRENCE_END_DATE: fields.String(
+            example="2026-06-20T09:00:00Z",
+            required=False
+        )
     },
 )
 
@@ -52,6 +63,15 @@ create_class_model = api.model(
         DATETIME: fields.String(example=_EXAMPLE_CLASS[DATETIME]),
         CAPACITY: fields.Integer(example=_EXAMPLE_CLASS[CAPACITY]),
         TRAINER_NAME: fields.String(example=_EXAMPLE_CLASS[TRAINER_NAME]),
+        RECURRENCE_TYPE: fields.String(
+            enum=["one_time", "daily", "weekly"],
+            example="weekly",
+            required=False
+        ),
+        RECURRENCE_END_DATE: fields.String(
+            example="2026-06-20T09:00:00Z",
+            required=False
+        )
     },
 )
 
