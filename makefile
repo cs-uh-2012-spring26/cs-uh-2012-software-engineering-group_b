@@ -33,7 +33,9 @@ else
 endif
 
 run_local_server: dev_env tests
-	$(ACTIVATE) && FLASK_APP=app flask run --debug --host=0.0.0.0 --port 8000
+	$(ACTIVATE) && python telegram_bot.py & BOT_PID=$$!; \
+	trap "kill $$BOT_PID 2>/dev/null" EXIT; \
+	FLASK_APP=app flask run --debug --host=0.0.0.0 --port 8000
 
 tests: pytests
 
