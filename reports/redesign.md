@@ -204,7 +204,12 @@ Implementation status:
 
 ### 4. New Features 6 & 7
 The refactored Service Layer cleanly accommodates the new feature requirements:
-* Feature 7 (Configurable Notifications): The `email_reminders` module and `FitnessClassService` were updated to accept a `sender_email` configuration parameter (`send_class_reminders(..., sender_email)`). This allows dynamic routing of notifications without altering the underlying SendGrid API logic.
+* To support dynamic notification preferences (Email vs. Telegram), the architecture utilizes the Strategy Design Pattern.
+  * A `NotificationService` handles the orchestration: iterating through bookings, resolving users, and evaluating user preferences.
+  * An abstract `NotificationChannel` interface was created to define a standard `send()` method.
+  * Concrete implementations (`EmailNotificationChannel` and `TelegramNotificationChannel`) inherit from this interface and handle the specific external API calls (SendGrid and Telegram).
+* This adheres to the Open/Closed Principle. The system is open for extension (e.g., adding SMS or Push Notification channels later) but closed for modification (the core `NotificationService` and `FitnessClassService` do not need to be altered when new channels are added).
+
 * Feature 6 (Recurring Classes): The architecture now anticipates recurring classes. Future logic will be encapsulated entirely within the `FitnessClassService` (e.g., via a `create_recurring_classes` method) and mapped to a new `RECURRENCE_PATTERN` attribute in the `fitness_classes` database module, leaving the API controllers completely untouched.
 
 ### 5. Summary of Class Diagram Changes
