@@ -28,13 +28,20 @@ def create_app(test_config = None):
     api = Api(
         title="Fitness Class booking and management system",
         version="(Sprint 1)",
-        description="endpoints for booking, creating classes, and rudimentary account management",
+        description=(
+            "endpoints for booking, creating classes, and rudimentary account management\n\n"
+            "Telegram setup for reminders: open https://t.me/CoachlyyBot, send /start, "
+            "copy the chat ID the bot replies with, then save it with POST /auth/notification-preferences."
+        ),
         authorizations={
             "Bearer Auth": {
                 "type": "apiKey",
                 "in": "header",
                 "name": "Authorization",
-                "description": 'Add a JWT token to the header with ** "Bearer &lt;JWT&gt;"** token to authorize',
+                "description": (
+                    'Add a JWT token to the header with ** "Bearer &lt;JWT&gt;"** token to authorize. '
+                    "For Telegram reminders, start the bot at https://t.me/CoachlyyBot"
+                ),
             }
         },
         security="Bearer Auth",

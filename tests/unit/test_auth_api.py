@@ -118,6 +118,58 @@ def test_validate_token_wrong_fields(client):
     })
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
+
+def test_update_notification_preferences_success(client, sample_member_auth, app):
+    """Authenticated users can configure email/telegram notification preferences."""
+    m_uid, _ = sample_member_auth
+    user = get_user_by_user_id(m_uid)
+
+    with app.app_context():
+        member_token = create_access_token(
+            identity=user["email"],
+            additional_claims={"role": "member", "user_id": m_uid},
+        )
+
+    response = client.post(
+        "/auth/notification-preferences",
+        json={
+            "notification_preferences": {"email": True, "telegram": True},
+            "telegram_chat_id": "123456789",
+        },
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json[MSG] == "Notification preferences updated"
+    assert response.json["notification_preferences"] == {"email": True, "telegram": True}
+
+
+def test_update_notification_preferences_validation(client, sample_member_auth, app):
+    """Notification preference endpoint validates payload and auth."""
+    m_uid, _ = sample_member_auth
+    user = get_user_by_user_id(m_uid)
+
+    with app.app_context():
+        member_token = create_access_token(
+            identity=user["email"],
+            additional_claims={"role": "member", "user_id": m_uid},
+        )
+
+    # Missing auth header
+    response = client.post(
+        "/auth/notification-preferences",
+        json={"notification_preferences": {"email": True, "telegram": False}},
+    )
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    # Invalid preferences payload
+    response = client.post(
+        "/auth/notification-preferences",
+        json={"notification_preferences": {"email": "yes", "telegram": False}},
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
 def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
     """Class creation endpoint denies missing, invalid, and unauthorized JWTs."""
 

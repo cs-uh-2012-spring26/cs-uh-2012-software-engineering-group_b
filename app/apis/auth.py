@@ -1,7 +1,7 @@
 """Auth endpoints for user registration with token validation."""
 from flask import request
 from flask_restx import Namespace, Resource, abort, fields
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, verify_jwt_in_request
 from functools import wraps
 from http import HTTPStatus
 
@@ -10,7 +10,14 @@ from app.exceptions import AppError
 from app.services.auth_service import AuthService
 from app.services.token_service import TokenService
 
-api = Namespace("auth", description="    Endpoints for logging in, registering, and validating token")
+api = Namespace(
+    "auth",
+    description=(
+        "Endpoints for logging in, registering, and validating token. "
+        "For Telegram reminders: send /start to https://t.me/CoachlyyBot to receive your chat ID, "
+        "then set notification_preferences.telegram and telegram_chat_id."
+    ),
+)
 
 # Models for Swagger
 register_model = api.model(
@@ -20,6 +27,11 @@ register_model = api.model(
         "name": fields.String(required=True, example="John Trainer", description="User name"),
         "email": fields.String(required=True, example="john@example.com", description="User email"),
         "phone": fields.String(example="+971-504-555-0100", description="User phone"),
+        "telegram_chat_id": fields.String(example="123456789", description="Telegram chat id (required for telegram notifications)"),
+        "notification_preferences": fields.Raw(
+            example={"email": True, "telegram": False},
+            description="Notification channels for reminders",
+        ),
         "birth_date": fields.String(example="1990-01-15", description="User birth date"),
         "password": fields.String(required=True, example="secure_password_123", description="User password"),
     },
@@ -55,6 +67,24 @@ validate_token_response = api.model(
     {
         "valid": fields.Boolean(example=True),
         "role": fields.String(example="trainer", enum=["trainer", "admin"]),
+    },
+)
+
+notification_preferences_model = api.model(
+    "NotificationPreferencesRequest",
+    {
+        "notification_preferences": fields.Raw(
+            required=True,
+            example={"email": True, "telegram": True},
+            description="Supported channels: email, telegram",
+        ),
+        "telegram_chat_id": fields.String(
+            example="123456789",
+            description=(
+                "Telegram chat id (required when telegram is enabled and no chat id is saved). "
+                "Start bot: https://t.me/CoachlyyBot"
+            ),
+        ),
     },
 )
 
@@ -160,6 +190,36 @@ class Login(Resource):
         
         return {
             MSG: "successful login!", "access_token": access_token
+        }, HTTPStatus.OK
+
+
+@api.route('/notification-preferences')
+class NotificationPreferences(Resource):
+    """Update notification preferences for the authenticated user."""
+
+    @api.expect(notification_preferences_model)
+    @api.response(HTTPStatus.OK, "Notification preferences updated")
+    @api.response(HTTPStatus.BAD_REQUEST, "Invalid preference payload")
+    @api.response(HTTPStatus.UNAUTHORIZED, "Missing or invalid authorization header")
+    def post(self):
+        """UPDATE NOTIFICATION PREFERENCES: authenticated users only"""
+        try:
+            verify_jwt_in_request()
+        except Exception:
+            return {MSG: "Missing or invalid authorization header"}, HTTPStatus.UNAUTHORIZED
+
+        user_email = get_jwt_identity()
+        payload = request.get_json() or {}
+
+        try:
+            updated_user = AuthService.update_notification_preferences(user_email, payload)
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
+
+        return {
+            MSG: "Notification preferences updated",
+            "notification_preferences": updated_user.get("notification_preferences", {}),
+            "telegram_chat_id": updated_user.get("telegram_chat_id"),
         }, HTTPStatus.OK
 
 
