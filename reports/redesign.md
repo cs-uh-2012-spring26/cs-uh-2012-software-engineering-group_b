@@ -180,3 +180,35 @@ Implementation status:
 3. Wire booking/class reminder flow to channel-based notification dispatch.
 4. Update Swagger and README endpoint docs for recurring rules and notification preferences.
 5. Update UML class diagram to reflect strategy and factory classes.
+
+## 8. Class Diagram Update from Sprint 3A to Sprint3B
+
+![Class diagram](class_diagrams/sprint3b/class_diagram.svg)
+
+### Key Updates ###
+
+### 1. Shift to a Strict Layered Architecture (N-Tier Pattern)
+* The API controller classes (e.g., `BookingResource`, `Register`, `ClassListResource`) contained heavy business logic. They were responsible for parsing HTTP requests, enforcing business rules (like checking capacities or verifying user roles), and executing database queries directly.
+*  So We introduced a distinct **Service Layer** to act as an intermediary between the API controllers and the Database modules. 
+  * API Layer: Now strictly handles HTTP protocol concerns (parsing JSON payloads and returning appropriate HTTP status codes).
+  * Service Layer: Contains `AuthService`, `BookingService`, and `FitnessClassService`. These classes handle all domain logic, orchestration, and validations.
+  * Database Layer: Strictly handles data persistence and retrieval.
+
+### 2. Implementation of Data Transfer Objects (DTOs)
+* Previously, Database creation methods, such as `build_booking_document`, suffered from the "Long Parameter List" code smell, taking numerous primitive data types as individual arguments.
+* So we introduced the `BookingUser` class to serve as a Data Transfer Object (DTO). The `BookingService` now bundles related data into this single object before passing it down to the database layer. This drastically cleans up function signatures, improves type safety, and makes the application highly extensible if new data fields are required.
+
+### 3. Dedicated Token Management
+* Previously, logic for validating registration tokens and determining user roles (admin vs. trainer) was hard-coded inside the authentication endpoints.
+* Now token resolution was extracted into a dedicated `TokenService`. This ensures that the authentication logic relies on an abstraction for token validation, strictly adhering to the Single Responsibility Principle.
+
+### 4. New Features 6 & 7
+The refactored Service Layer cleanly accommodates the new feature requirements:
+* Feature 7 (Configurable Notifications): The `email_reminders` module and `FitnessClassService` were updated to accept a `sender_email` configuration parameter (`send_class_reminders(..., sender_email)`). This allows dynamic routing of notifications without altering the underlying SendGrid API logic.
+* Feature 6 (Recurring Classes): The architecture now anticipates recurring classes. Future logic will be encapsulated entirely within the `FitnessClassService` (e.g., via a `create_recurring_classes` method) and mapped to a new `RECURRENCE_PATTERN` attribute in the `fitness_classes` database module, leaving the API controllers completely untouched.
+
+### 5. Summary of Class Diagram Changes
+1. Separation of API and DB which leads to dashed dependency lines no longer go directly from the API layer to the Database layer.
+2. We added new service nodes for `AuthService`, `BookingService`, `FitnessClassService`, and `TokenService`.
+3. We added delegation arrows moving strictly from API $\rightarrow$ Service $\rightarrow$ Database.
+4. We added the `BookingUser (DTO)` as an internal structure within the `bookings` database module.
