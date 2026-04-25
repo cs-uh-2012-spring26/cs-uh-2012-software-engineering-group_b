@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from enum import StrEnum
+from enum import Enum
 from uuid import uuid4
 
 from app.db import DB
@@ -22,7 +22,7 @@ STATUS = "status"
 BOOKED_AT = "booked_at"
 
 # Booking status values
-class BookingRole(StrEnum):
+class BookingRole(str, Enum):
 	"""Allowed roles for booking ownership."""
 
 	GUEST = "guest"
@@ -31,7 +31,7 @@ class BookingRole(StrEnum):
 	ADMIN = "admin"
 
 
-class BookingStatus(StrEnum):
+class BookingStatus(str, Enum):
 	"""Allowed booking lifecycle states."""
 
 	CONFIRMED = "confirmed"
