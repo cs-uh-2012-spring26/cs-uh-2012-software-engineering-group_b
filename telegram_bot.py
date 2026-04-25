@@ -46,14 +46,14 @@ def send_message(chat_id: int | str, text: str) -> None:
 
 def get_updates(offset: int) -> list[dict]:
     try:
-        data = json.dumps({"offset": offset, "timeout": 30}).encode("utf-8")
+        data = json.dumps({"offset": offset}).encode("utf-8")
         req = urllib_request.Request(
             url=f"{BASE_URL}/getUpdates",
             data=data,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib_request.urlopen(req, timeout=35) as resp:
+        with urllib_request.urlopen(req, timeout=10) as resp:
             return json.loads(resp.read()).get("result", [])
     except error.URLError as exc:
         print(f"[warn] getUpdates failed: {exc}")
