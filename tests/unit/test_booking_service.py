@@ -54,6 +54,27 @@ def test_book_class_not_found_user():
     with pytest.raises(NotFoundError):
         BookingService.book_class("missing-user@example.com", "class_001")
 
+def test_book_class_non_member_cannot_book():
+    """Non-member users cannot book classes."""
+    
+    suffix = str(uuid4())[:8]
+    email = f"trainer_{suffix}@example.com"
+    class_id = f"class_trainer_{suffix}"
+
+    trainer = build_user_document(
+        name="Trainer User",
+        email=email,
+        password_hash="hashed",
+        role="trainer",
+        user_id=f"trainer_{suffix}",
+    )
+    create_user(trainer)
+    _create_class(class_id=class_id)
+
+    with pytest.raises(DomainError) as exc:
+        BookingService.book_class(email, class_id)
+
+    assert "Only members can book classes" in str(exc.value)
 
 def test_book_class_duplicate_booking():
     suffix = str(uuid4())[:8]
@@ -69,7 +90,6 @@ def test_book_class_duplicate_booking():
         BookingService.book_class(email, class_id)
 
     assert "Booking already exists" in str(exc.value)
-
 
 def test_book_class_when_full():
     suffix = str(uuid4())[:8]

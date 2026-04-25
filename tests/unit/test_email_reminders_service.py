@@ -147,3 +147,48 @@ def test_send_class_reminders_wraps_url_errors(monkeypatch, mocker):
             recipient_emails=["member@example.com"],
             fitness_class={TITLE: "Yoga", DATETIME: "2036-02-20T09:00:00Z", TRAINER_NAME: "Alex"},
         )
+
+def test_resolve_sender_email_explicit():
+    """Should use explicit sender_email when provided."""
+    result = svc._resolve_sender_email("explicit@example.com")
+    assert result == "explicit@example.com"
+
+
+def test_resolve_sender_email_env_fallback(monkeypatch):
+    """Should use env SENDGRID_FROM_EMAIL when explicit is None."""
+    monkeypatch.setenv("SENDGRID_FROM_EMAIL", "env@example.com")
+    
+    result = svc._resolve_sender_email(None)
+    assert result == "env@example.com"
+
+
+def test_resolve_sender_email_default(monkeypatch):
+    """Should use default when explicit and env are None."""
+    monkeypatch.delenv("SENDGRID_FROM_EMAIL", raising=False)
+    
+    result = svc._resolve_sender_email(None)
+    assert result == "noreply@coachly.dev"
+
+def test_send_single_class_reminder_success(monkeypatch, mocker):
+    """send_single_class_reminder should send email and return normalized recipient."""
+    monkeypatch.setenv("SENDGRID_API_KEY", "SG.fake")
+    mocked_send = mocker.patch("app.services.email_reminders._sendgrid_send_email")
+    
+    result = svc.send_single_class_reminder(
+        recipient_email="  user@example.com  ",
+        fitness_class={TITLE: "Yoga", DATETIME: "2036-02-20T09:00:00Z", TRAINER_NAME: "Alex"},
+    )
+    
+    assert result == "user@example.com"
+    mocked_send.assert_called_once()
+
+
+def test_send_single_class_reminder_invalid_recipient(monkeypatch):
+    """send_single_class_reminder raises when recipient is empty/invalid."""
+    monkeypatch.setenv("SENDGRID_API_KEY", "SG.fake")
+    
+    with pytest.raises(RuntimeError, match="Recipient email is required"):
+        svc.send_single_class_reminder(
+            recipient_email="   ",
+            fitness_class={TITLE: "Yoga", DATETIME: "2036-02-20T09:00:00Z", TRAINER_NAME: "Alex"},
+        )

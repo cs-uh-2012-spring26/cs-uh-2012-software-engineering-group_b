@@ -243,3 +243,26 @@ def test_generate_weekly_class_with_end_date():
     assert instances[0] == "2036-05-15T10:00:00Z"
     assert instances[1] == "2036-05-22T10:00:00Z"
     assert instances[2] == "2036-05-29T10:00:00Z"
+
+def test_add_fitness_class_invalid_recurrence_type(client, trainer_headers):
+    """Invalid recurrence_type is rejected."""
+    response = client.post("/classes/", json = {
+        TITLE: "Morning Yoga",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer",
+        "recurrence_type": "invalid_type"
+    }, headers=trainer_headers)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+def test_add_fitness_class_invalid_end_date_format(client, trainer_headers):
+    """Invalid recurrence_end_date format is rejected."""
+    response = client.post("/classes/", json = {
+        TITLE: "Morning Yoga",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer",
+        "recurrence_type": "daily",
+        "recurrence_end_date": "not-a-date"
+    }, headers=trainer_headers)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
