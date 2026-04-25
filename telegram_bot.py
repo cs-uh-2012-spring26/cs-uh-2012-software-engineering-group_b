@@ -10,6 +10,10 @@ import os
 import time
 from urllib import error, request as urllib_request
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 if not BOT_TOKEN:
     raise SystemExit("TELEGRAM_BOT_TOKEN is not set")
