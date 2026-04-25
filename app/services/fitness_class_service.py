@@ -1,6 +1,6 @@
 from datetime import datetime as dt_mod, timezone
 
-from app.db.bookings import USER_EMAIL, list_bookings_by_class
+from app.db.bookings import list_bookings_by_class
 from app.db.fitness_classes import (
     CAPACITY,
     DATETIME,
@@ -12,7 +12,7 @@ from app.db.fitness_classes import (
     get_class_by_class_id,
 )
 from app.exceptions import DomainError, InfrastructureError, NotFoundError, ValidationError
-from app.services.email_reminders import send_class_reminders
+from app.services.notification_service import NotificationService
 
 
 class FitnessClassService:
@@ -67,29 +67,24 @@ class FitnessClassService:
             raise ValidationError("Reminders can only be sent before the class starts")
 
         bookings = list_bookings_by_class(class_id)
-        recipient_emails = sorted(
-            {
-                booking.get(USER_EMAIL, "").strip()
-                for booking in bookings
-                if isinstance(booking.get(USER_EMAIL), str) and booking.get(USER_EMAIL).strip()
-            }
-        )
-
-        if not recipient_emails:
+        if not bookings:
             raise ValidationError("No attendees found for this class")
 
         try:
-            send_result = send_class_reminders(
-                recipient_emails=recipient_emails,
+            send_result = NotificationService().send_for_bookings(
+                bookings=bookings,
                 fitness_class=fitness_class,
                 sender_email=sender_email,
             )
         except Exception as exc:
-            raise InfrastructureError(f"Failed to send reminder emails: {exc}") from exc
+            raise InfrastructureError(f"Failed to send reminder notifications: {exc}") from exc
+
+        if send_result.get("sent_count", 0) == 0:
+            raise ValidationError("No notification channels configured for attendees")
 
         return {
-            "message": "Reminder emails sent",
+            "message": "Reminder notifications sent",
             "class_id": class_id,
             "sent_count": send_result.get("sent_count", 0),
-            "recipients": send_result.get("recipients", recipient_emails),
+            "recipients": send_result.get("recipients", []),
         }
