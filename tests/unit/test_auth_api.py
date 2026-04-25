@@ -65,6 +65,16 @@ def test_register_wrong_fields(client, sample_member_auth):
     })
     assert response.status_code == HTTPStatus.CONFLICT and response.json[MSG] == "Phone already registered"
 
+def test_register_with_invalid_token(client):
+    """Registration with invalid/expired token is rejected."""
+    response = client.post("/auth/register", json={
+        "name": "Test User",
+        "email": "test@example.com",
+        "password": "password123",
+        "token": "invalid_token_xyz"
+    })
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
 def test_login_correct_fields(client, sample_member_auth):
     """Login succeeds with correct credentials for existing user."""
     

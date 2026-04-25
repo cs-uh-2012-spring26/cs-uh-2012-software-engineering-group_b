@@ -25,7 +25,6 @@ def test_add_fitness_class_correct_fields(client, trainer_headers):
     }, headers=trainer_headers)
     assert response.status_code == HTTPStatus.CREATED
 
-
 def test_add_fitness_class_duplicate_rejected(client, trainer_headers):
     """Creating the same class twice is rejected with conflict."""
     payload = {
@@ -41,7 +40,6 @@ def test_add_fitness_class_duplicate_rejected(client, trainer_headers):
     second_response = client.post("/classes/", json=payload, headers=trainer_headers)
     assert second_response.status_code == HTTPStatus.CONFLICT
     assert second_response.json[MSG] == "Class already exists"
-
 
 def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mocker):
     """Trainer can send reminders to booked attendees before class start."""
@@ -87,7 +85,6 @@ def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mock
     assert called_kwargs["fitness_class"][CLASS_ID] == fitness_class[CLASS_ID]
     assert isinstance(called_kwargs["bookings"], list)
 
-
 def test_send_class_reminders_no_attendees(client, trainer_headers):
     """Reminder request fails when class has no bookings."""
     class_id = f"class_{uuid4()}"
@@ -106,14 +103,12 @@ def test_send_class_reminders_no_attendees(client, trainer_headers):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.get_json()[MSG] == "No attendees found for this class"
 
-
 def test_send_class_reminders_class_not_found(client, trainer_headers):
     """Reminder request returns not found for unknown class id."""
     response = client.post(f"/classes/class_{uuid4()}/reminders", headers=trainer_headers)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.get_json()[MSG] == "Class not found"
-
 
 def test_send_class_reminders_past_class(client, trainer_headers):
     """Reminder request is rejected when class datetime is in the past."""
@@ -213,3 +208,61 @@ def test_add_fitness_class_missing_field(client, trainer_headers):
     }, headers=trainer_headers)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
+def test_generate_one_time_class():
+    """One-time recurrence returns only the start date."""
+    from app.db.fitness_classes import generate_recurring_instances
+    
+    start_dt = "2036-05-15T10:00:00Z"
+    instances = generate_recurring_instances(start_dt, "one_time", None)
+    
+    assert len(instances) == 1
+    assert instances[0] == start_dt
+
+def test_generate_daily_class_with_end_date():
+    """Daily recurrence generates instances until end date."""
+    from app.db.fitness_classes import generate_recurring_instances
+    
+    start_dt = "2036-05-15T10:00:00Z"
+    end_dt = "2036-05-17T10:00:00Z"
+    instances = generate_recurring_instances(start_dt, "daily", end_dt)
+    
+    assert len(instances) == 3  # 15th, 16th, 17th
+    assert instances[0] == "2036-05-15T10:00:00Z"
+    assert instances[1] == "2036-05-16T10:00:00Z"
+    assert instances[2] == "2036-05-17T10:00:00Z"
+
+def test_generate_weekly_class_with_end_date():
+    """Weekly recurrence generates instances at 7-day intervals."""
+    from app.db.fitness_classes import generate_recurring_instances
+    
+    start_dt = "2036-05-15T10:00:00Z"
+    end_dt = "2036-06-01T10:00:00Z"
+    instances = generate_recurring_instances(start_dt, "weekly", end_dt)
+    
+    assert len(instances) == 3  # 15th, 22nd, 29th (1st is past end)
+    assert instances[0] == "2036-05-15T10:00:00Z"
+    assert instances[1] == "2036-05-22T10:00:00Z"
+    assert instances[2] == "2036-05-29T10:00:00Z"
+
+def test_add_fitness_class_invalid_recurrence_type(client, trainer_headers):
+    """Invalid recurrence_type is rejected."""
+    response = client.post("/classes/", json = {
+        TITLE: "Morning Yoga",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer",
+        "recurrence_type": "invalid_type"
+    }, headers=trainer_headers)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+def test_add_fitness_class_invalid_end_date_format(client, trainer_headers):
+    """Invalid recurrence_end_date format is rejected."""
+    response = client.post("/classes/", json = {
+        TITLE: "Morning Yoga",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer",
+        "recurrence_type": "daily",
+        "recurrence_end_date": "not-a-date"
+    }, headers=trainer_headers)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
