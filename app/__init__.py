@@ -1,7 +1,6 @@
 from app.apis.booking import api as booking_ns
 from app.apis.fitness_class import api as fitness_class_ns
 from app.apis.auth import api as auth
-from app.apis.telegram import api as telegram_ns
 from app.config import Config
 from app.db import DB
 
@@ -52,7 +51,6 @@ def create_app(test_config = None):
     api.add_namespace(fitness_class_ns)
     api.add_namespace(booking_ns)
     api.add_namespace(auth)
-    api.add_namespace(telegram_ns)
 
     @api.errorhandler(AppError)
     def handle_application_error(error):
