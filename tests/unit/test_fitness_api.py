@@ -72,7 +72,7 @@ def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mock
     )
 
     mocked_send = mocker.patch(
-        "app.services.notification_service.NotificationService.send_for_bookings",
+        "app.services.fitness_class_service.send_class_reminders",
         return_value={"sent_count": 1, "recipients": ["jane.member@example.com"]},
     )
 
@@ -80,12 +80,12 @@ def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mock
 
     assert response.status_code == HTTPStatus.OK
     assert response.get_json()["sent_count"] == 1
-    assert response.get_json()[MSG] == "Reminder notifications sent"
+    assert response.get_json()[MSG] == "Reminder emails sent"
     mocked_send.assert_called_once()
     called_kwargs = mocked_send.call_args.kwargs
     assert called_kwargs["sender_email"] == "noreply@coachly.dev"
+    assert called_kwargs["recipient_emails"] == ["jane.member@example.com"]
     assert called_kwargs["fitness_class"][CLASS_ID] == fitness_class[CLASS_ID]
-    assert isinstance(called_kwargs["bookings"], list)
 
 
 def test_send_class_reminders_no_attendees(client, trainer_headers):

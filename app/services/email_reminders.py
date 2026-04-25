@@ -86,21 +86,3 @@ def send_class_reminders(
         raise RuntimeError(f"Unable to send reminder email(s): {exc}") from exc
 
     return {"sent_count": sent_count, "recipients": sent_recipients}
-
-
-def send_single_class_reminder(
-    recipient_email: str,
-    fitness_class: dict,
-    sender_email: str | None = None,
-) -> str:
-    """Send one class reminder email and return the recipient email on success."""
-    normalized_recipients = _normalize_recipients([recipient_email])
-    if not normalized_recipients:
-        raise RuntimeError("Recipient email is required")
-
-    recipient = normalized_recipients[0]
-    api_key = _sendgrid_api_key()
-    sender = _resolve_sender_email(sender_email)
-    subject, body = _build_reminder_message(fitness_class)
-    _sendgrid_send_email(api_key, sender, recipient, subject, body)
-    return recipient

@@ -22,8 +22,3 @@ DEBUG="true"
 SENDGRID_API_KEY="your_sendgrid_api_key_here"
 SENDGRID_FROM_EMAIL=noreply@coachly.dev
 SENDGRID_ACCOUNT_EMAIL=your_sendgrid_account_email_here
-
-# telegram config
-TELEGRAM_BOT_TOKEN="your_telegram_bot_token_here"
-# After deploying, register the webhook once:
-# curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<your-domain>/telegram/webhook"

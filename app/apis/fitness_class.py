@@ -99,14 +99,14 @@ class ClassListResource(Resource):
 @api.route("/<string:class_id>/reminders")
 @api.param("class_id", "Class identifier")
 class ClassReminderResource(Resource):
-    @api.response(HTTPStatus.OK, "Reminder notifications sent")
+    @api.response(HTTPStatus.OK, "Reminder emails sent")
     @api.response(HTTPStatus.BAD_REQUEST, "Class already started or no attendees")
     @api.response(HTTPStatus.NOT_FOUND, "Class not found")
     @api.response(HTTPStatus.FORBIDDEN, "Only trainers can send reminders")
     @require_roles(["trainer"])
     def post(self, class_id: str):
         """
-        SEND REMINDER NOTIFICATIONS: allowed for trainers only
+        SEND REMINDER EMAILS: allowed for trainers only
         """
         try:
             send_result = FitnessClassService.send_reminders(

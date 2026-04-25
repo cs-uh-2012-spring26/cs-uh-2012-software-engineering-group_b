@@ -19,14 +19,7 @@ This repo contains a Flask-RESTX API foundation for the Sprint 2 Fitness Class M
 - Required environment variable: `SENDGRID_API_KEY`.
 - Optional environment variable: `SENDGRID_FROM_EMAIL` (defaults to `noreply@coachly.dev` when not provided).
 
-### 3) Configurable reminder notifications (Email + Telegram)
-
-- Reminder notifications support channel-based delivery with an extensible strategy design.
-- The current channels are Email and Telegram.
-- Required Telegram environment variable: `TELEGRAM_BOT_TOKEN`.
-- Telegram destination (`telegram_chat_id`) is stored per user through the auth preferences endpoint.
-
-### 4) Unit testing updates
+### 3) Unit testing updates
 
 - Added/updated unit tests for the email reminder service flow in `tests/unit/test_email_reminders_service.py`.
 - Tests cover message building, recipient normalization, API key validation, successful sends, rejected SendGrid statuses, and wrapped transport errors.
@@ -133,7 +126,7 @@ Find the equivalent for your OS)
 
 ### Setting up the environment
 
-1. Check `.envexample` file and follow the instructions there to create
+1. Check `.samplenv` file and follow the instructions there to create
 your `.env` file
 2. Run `make dev_env` to create a virtual environment and install dependencies
 
@@ -161,7 +154,7 @@ Active namespaces:
 - `/classes`
   - `GET /classes/` → View class list (template)
   - `POST /classes/` → Create class (template)
-  - `POST /classes/<class_id>/reminders` → Send reminder notifications to class attendees (template)
+  - `POST /classes/<class_id>/reminders` → Send email reminders to class attendees (template)
 - `/bookings`
   - `POST /bookings/` → Book class (template)
   - `GET /bookings/class/<class_id>` → View booking list (template)
@@ -169,33 +162,6 @@ Active namespaces:
   - `POST /auth/register` → Register a new user and return JWT access_token
   - `POST /auth/login` → Authenticate existing user and return JWT access_token
   - `POST /auth/validate-token` → Validate a registration invite token
-  - `POST /auth/notification-preferences` → Update user notification preferences and telegram_chat_id
-
-## Sending Telegram Reminders
-
-To deliver class reminders through Telegram, complete all of the following:
-
-1. Set `TELEGRAM_BOT_TOKEN` in your `.env`.
-2. Ensure the target user has a valid `telegram_chat_id` and Telegram notifications enabled.
-3. Create/book a future class for that user.
-4. Trigger `POST /classes/<class_id>/reminders` using a trainer JWT.
-
-Example preference update (authenticated as the target user):
-
-```json
-{
-  "notification_preferences": {
-    "email": false,
-    "telegram": true
-  },
-  "telegram_chat_id": "123456789"
-}
-```
-
-Notes:
-- The API calls Telegram Bot API `sendMessage` under the hood.
-- If `TELEGRAM_BOT_TOKEN` is missing or invalid, reminder sending will fail at dispatch time.
-- The user must have started a chat with your bot so the `telegram_chat_id` is reachable.
 
 ## Virtual Environment (Manual)
 
