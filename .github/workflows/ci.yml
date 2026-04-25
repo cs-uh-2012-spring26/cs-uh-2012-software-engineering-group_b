@@ -1,6 +1,6 @@
 name: CI Pipeline
 
-#Run on every push and PR to the main branch
+# Run on every push and PR to the main branch
 on:
   push:
     branches: [ "main" ]
@@ -14,11 +14,16 @@ jobs:
     # These environment variables are required by config.py
     # MOCK_DB must be "true" to use mongomock instead of a real DB
     env:
-      MONGO_URI: "mongodb://localhost:27017/testdb"
+      # Injecting sensitive variables using GitHub Secrets (Task 4 Fix)
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      SENDGRID_FROM_EMAIL: ${{ secrets.SENDGRID_FROM_EMAIL }}
+      SENDGRID_ACCOUNT_EMAIL: ${{ secrets.SENDGRID_ACCOUNT_EMAIL }}
+      # Safe configuration flags can remain hard-coded
       DB_NAME: "testdb"
       MOCK_DB: "true"
       DEBUG: "true"
-      JWT_SECRET_KEY: "dummy-secret-key-for-ci-testing"
 
     steps:
     - name: Check out the repository
