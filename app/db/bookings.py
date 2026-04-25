@@ -1,5 +1,6 @@
-# pylint: disable=too-many-arguments
+from dataclasses import dataclass
 from datetime import datetime, timezone
+from enum import StrEnum
 from uuid import uuid4
 
 from app.db import DB
@@ -21,8 +22,35 @@ STATUS = "status"
 BOOKED_AT = "booked_at"
 
 # Booking status values
-STATUS_CONFIRMED = "confirmed"
-STATUS_CANCELLED = "cancelled"
+class BookingRole(StrEnum):
+	"""Allowed roles for booking ownership."""
+
+	GUEST = "guest"
+	MEMBER = "member"
+	TRAINER = "trainer"
+	ADMIN = "admin"
+
+
+class BookingStatus(StrEnum):
+	"""Allowed booking lifecycle states."""
+
+	CONFIRMED = "confirmed"
+	CANCELLED = "cancelled"
+
+
+STATUS_CONFIRMED = BookingStatus.CONFIRMED.value
+STATUS_CANCELLED = BookingStatus.CANCELLED.value
+
+
+@dataclass(frozen=True)
+class BookingUser:
+	"""Value object for user details embedded in a booking."""
+
+	user_id: str
+	user_name: str
+	user_email: str
+	role: BookingRole
+	phone: str | None = None
 
 
 def _collection():
@@ -36,14 +64,10 @@ def utc_now_iso() -> str:
 
 def build_booking_document(
 	class_id: str,
-	user_id: str,
-	user_name: str,
-	user_email: str,
-	phone: str | None,
-	role: str,
+	booking_user: BookingUser,
 	*,
 	booking_id: str | None = None,
-	status: str = STATUS_CONFIRMED,
+	status: BookingStatus = BookingStatus.CONFIRMED,
 	booked_at: str | None = None,
 ) -> dict:
 	"""Build a normalized booking document ready for persistence."""
@@ -52,12 +76,12 @@ def build_booking_document(
 	return {
 		BOOKING_ID: booking_id or str(uuid4()),
 		CLASS_ID: class_id,
-		USER_ID: user_id,
-		USER_NAME: user_name,
-		USER_EMAIL: user_email,
-		PHONE: phone,
-		ROLE: role,
-		STATUS: status,
+		USER_ID: booking_user.user_id,
+		USER_NAME: booking_user.user_name,
+		USER_EMAIL: booking_user.user_email,
+		PHONE: booking_user.phone,
+		ROLE: booking_user.role.value,
+		STATUS: status.value,
 		BOOKED_AT: booked_ts,
 	}
 

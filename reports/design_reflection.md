@@ -250,3 +250,59 @@ The global error handler in `create_app` is registered for the base `Exception` 
 ### 4.3 Summary
 
 > Overall, our current modular architecture successfully handles basic CRUD operations and enforces basic separation of concerns. However, our design analysis reveals that the system is highly rigid and tailored to a single, flat use case. The lack of relational abstractions (hindering recurring classes) and tight coupling to specific implementations like Email (violating the Open-Closed Principle) will make new features difficult to add safely. Before beginning Sprint 3B, our priority must be refactoring our service layer to use polymorphic design patterns (like Strategy) and extending our data models to support linked entities and user preferences.
+
+---
+
+## Sprint 3B Traceability Update (Post-Refactor)
+
+This section links each Sprint 3A violation and code smell to the concrete Sprint 3B code changes that addressed it.
+
+### A. Design Principle Violations: Violation-to-Fix Mapping
+
+1. Violation 1: SRP and Modularity in Register.post
+- Fix: registration logic moved into AuthService; controller now only maps HTTP input/output.
+- Evidence files: app/apis/auth.py, app/services/auth_service.py.
+
+2. Violation 2: OCP and Tight Coupling in hard-coded invite tokens
+- Fix: token role resolution abstracted behind TokenService.
+- Evidence files: app/apis/auth.py, app/services/token_service.py.
+
+3. Violation 3: API-to-DB coupling in booking and class creation endpoints
+- Fix: orchestration moved to service layer; API resources now act as thin controllers.
+- Evidence files: app/apis/booking.py, app/services/booking_service.py, app/apis/fitness_class.py, app/services/fitness_class_service.py.
+
+4. Violation 4: Side effects in serialize_item
+- Fix: serialize_item now returns a new dictionary and no longer mutates caller-owned data.
+- Evidence file: app/db/utils.py.
+
+5. Violation 5: Catch-all exception anti-pattern in create_app
+- Fix: typed exception hierarchy plus specific handlers for domain/app errors and HTTP exceptions, with one sanitized fallback.
+- Evidence files: app/__init__.py, app/exceptions.py.
+
+### B. Code Smells: Smell-to-Fix Mapping
+
+1. Smell 1: Long Method in ClassListResource.post
+- Fix: validation and business rules moved into FitnessClassService.create_class.
+- Evidence files: app/apis/fitness_class.py, app/services/fitness_class_service.py.
+
+2. Smell 2: Duplicate Code in booking test fixtures
+- Fix: shared fixture helper _register_or_get_member consolidates repeated registration/token fallback logic.
+- Evidence file: tests/unit/test_booking_api.py.
+
+3. Smell 3: Dead code / unused import in booking API
+- Fix: removed unused imports while converting endpoint to service-driven flow.
+- Evidence file: app/apis/booking.py.
+
+4. Smell 4: Long Parameter List in build_booking_document
+- Fix: introduced BookingUser value object and changed builder signature to receive booking_user instead of multiple primitives.
+- Evidence files: app/db/bookings.py, app/services/booking_service.py.
+
+5. Smell 5: Primitive Obsession in booking domain
+- Fix: introduced BookingRole and BookingStatus enums plus BookingUser data class to model booking concepts explicitly.
+- Evidence files: app/db/bookings.py, tests/unit/test_fitness_api.py.
+
+### C. Verification Snapshot
+
+- Unit tests after refactor: all passing.
+- Coverage after refactor remained above the sprint minimum requirement.
+- Refactored structure now supports extending business behavior with minimal API-layer changes.

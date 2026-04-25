@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from app.apis import MSG
 
-from app.db.bookings import build_booking_document, create_booking
+from app.db.bookings import BookingRole, BookingUser, build_booking_document, create_booking
 from app.db.fitness_classes import CAPACITY, DATETIME, TITLE, TRAINER_NAME
 from app.db.fitness_classes import CLASS_ID, build_fitness_class_document, create_fitness_class
 
@@ -61,16 +61,18 @@ def test_send_class_reminders_success(client, trainer_headers, monkeypatch, mock
     create_booking(
         build_booking_document(
             class_id=class_id,
-            user_id=f"user_{uuid4()}",
-            user_name="Jane Member",
-            user_email="jane.member@example.com",
-            phone="+1-555-555-0100",
-            role="member",
+            booking_user=BookingUser(
+                user_id=f"user_{uuid4()}",
+                user_name="Jane Member",
+                user_email="jane.member@example.com",
+                phone="+1-555-555-0100",
+                role=BookingRole.MEMBER,
+            ),
         )
     )
 
     mocked_send = mocker.patch(
-        "app.apis.fitness_class.send_class_reminders",
+        "app.services.fitness_class_service.send_class_reminders",
         return_value={"sent_count": 1, "recipients": ["jane.member@example.com"]},
     )
 

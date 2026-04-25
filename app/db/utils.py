@@ -24,9 +24,9 @@ def serialize_item(item):
     Returns:
         dict: The serialized item with the 'ID' field converted.
     """
-    if item is not None:
-        item[ID] = serialize_oid(item[ID])
-    return item
+    if item is None:
+        return None
+    return {**item, ID: serialize_oid(item[ID])}
 
 
 def serialize_items(items):

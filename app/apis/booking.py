@@ -5,12 +5,7 @@ from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import get_jwt_identity
 from app.apis.decorators import require_roles
 from app.apis import MSG
-from app.db.bookings import (
-    booking_exists_for_user,
-    build_booking_document,
-    create_booking,
-    list_bookings_by_class,
-)
+from app.db.bookings import list_bookings_by_class
 from app.db.bookings import (
     BOOKING_ID,
     BOOKED_AT,
@@ -22,17 +17,8 @@ from app.db.bookings import (
     USER_ID,
     USER_NAME,
 )
-from app.db.users import (
-    EMAIL as USER_EMAIL_FIELD,
-    NAME as USER_NAME_FIELD,
-    PHONE as USER_PHONE_FIELD,
-    ROLE as USER_ROLE_FIELD,
-    ROLE_MEMBER,
-    USER_ID as USER_ID_FIELD,
-    get_user_by_email,
-    get_user_by_user_id,
-)
-from app.db.fitness_classes import decrement_available_spot, get_class_by_class_id
+from app.exceptions import AppError
+from app.services.booking_service import BookingService
 
 api = Namespace("bookings", description="    Endpoint for booking a class and seeing booking list")
 
@@ -96,37 +82,10 @@ class BookingResource(Resource):
                 MSG: f"{CLASS_ID} is required",
             }, HTTPStatus.BAD_REQUEST
 
-        user = get_user_by_email(token_user_email)
-        if user is None:
-            return {MSG: "User not found"}, HTTPStatus.NOT_FOUND
-
-        user_id = user.get(USER_ID_FIELD)
-        if not user_id:
-            return {MSG: "User not found"}, HTTPStatus.NOT_FOUND
-
-        if booking_exists_for_user(user_id, class_id):
-            return {MSG: "Booking already exists"}, HTTPStatus.CONFLICT
-
-        fitness_class = get_class_by_class_id(class_id)
-        if fitness_class is None:
-            return {MSG: "Class not found"}, HTTPStatus.NOT_FOUND
-
-        if user.get(USER_ROLE_FIELD) != ROLE_MEMBER:
-            return {MSG: "Only members can book classes"}, HTTPStatus.FORBIDDEN
-
-        booking_doc = build_booking_document(
-            class_id=class_id,
-            user_id=user_id,
-            user_name=user.get(USER_NAME_FIELD, ""),
-            user_email=user.get(USER_EMAIL_FIELD, ""),
-            phone=user.get(USER_PHONE_FIELD),
-            role=user.get(USER_ROLE_FIELD, ROLE_MEMBER),
-        )
-
-        if not decrement_available_spot(class_id):
-            return {MSG: "Class is full"}, HTTPStatus.CONFLICT
-
-        booking = create_booking(booking_doc)
+        try:
+            booking = BookingService.book_class(token_user_email, class_id)
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
 
         return {MSG: booking}, HTTPStatus.CREATED
 

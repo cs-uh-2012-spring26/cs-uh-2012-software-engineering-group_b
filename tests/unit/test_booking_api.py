@@ -32,53 +32,60 @@ def sample_class(client, trainer_headers):
     return response.json[MSG]["class_id"]
 
 # create 2 sample members specifically for testing within the booking endpoint
+def _register_or_get_member(client, app, *, name: str, email: str, phone: str, birth_date: str, password: str):
+    """Create a member if needed and always return `(user_id, token)` for tests."""
+    member_exists = get_user_by_email(email) is not None
+
+    response = client.post(
+        "/auth/register",
+        json={
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "birth_date": birth_date,
+            "password": password,
+        },
+    )
+
+    if not member_exists:
+        assert response.status_code == HTTPStatus.CREATED
+        return response.json["user_id"], response.json["access_token"]
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    existing_user = get_user_by_email(email)
+    with app.app_context():
+        member_token = create_access_token(
+            identity=email,
+            additional_claims={"role": "member", "user_id": existing_user["user_id"]},
+        )
+    return existing_user["user_id"], member_token
+
+
 @pytest.fixture
 def sample_member1(client, app):
     """Return member1 tuple (user_id, token), creating user if needed."""
-    sample_member1_exists = (get_user_by_email("member1@example.com") is not None)
-
-    response = client.post("/auth/register", json ={
-        "name": "sample_member1",
-        "email": "member1@example.com",
-        "phone": "+123-456-789-1011",
-        "birth_date": "1995-01-15",
-        "password": "secure_password_1"
-    })
-    if not sample_member1_exists:
-        assert response.status_code == HTTPStatus.CREATED
-        return response.json["user_id"], response.json["access_token"]
-    else:
-        assert response.status_code == HTTPStatus.CONFLICT
-        with app.app_context():
-            sample_member1_token = create_access_token (
-                identity="member1@example.com",
-                additional_claims={"role": "member", "user_id": get_user_by_email("member1@example.com")["user_id"]}
-            )
-        return get_user_by_email("member1@example.com")["user_id"], sample_member1_token
+    return _register_or_get_member(
+        client,
+        app,
+        name="sample_member1",
+        email="member1@example.com",
+        phone="+123-456-789-1011",
+        birth_date="1995-01-15",
+        password="secure_password_1",
+    )
 
 @pytest.fixture
 def sample_member2(client, app):
     """Return member2 tuple (user_id, token), creating user if needed."""
-    sample_member2_exists = (get_user_by_email("member2@example.com") is not None)
-
-    response = client.post("/auth/register", json ={
-        "name": "sample_member2",
-        "email": "member2@example.com",
-        "phone": "+123-456-789-1012",
-        "birth_date": "2995-01-15",
-        "password": "secure_password_2"
-    })
-    if not sample_member2_exists:
-        assert response.status_code == HTTPStatus.CREATED
-        return response.json["user_id"], response.json["access_token"]
-    else:
-        assert response.status_code == HTTPStatus.CONFLICT
-        with app.app_context():
-            sample_member2_token = create_access_token (
-                identity="member2@example.com",
-                additional_claims={"role": "member", "user_id": get_user_by_email("member2@example.com")["user_id"]}
-            )
-        return get_user_by_email("member2@example.com")["user_id"], sample_member2_token
+    return _register_or_get_member(
+        client,
+        app,
+        name="sample_member2",
+        email="member2@example.com",
+        phone="+123-456-789-1012",
+        birth_date="2995-01-15",
+        password="secure_password_2",
+    )
 
 
 #########################################################
