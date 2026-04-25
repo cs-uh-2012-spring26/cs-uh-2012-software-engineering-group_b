@@ -76,7 +76,26 @@ def handle(message: dict) -> None:
         send_message(chat_id, FALLBACK_REPLY)
 
 
+def _kill_existing_instances() -> None:
+    import os
+    import signal
+    current_pid = os.getpid()
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["pgrep", "-f", "telegram_bot.py"],
+            capture_output=True, text=True
+        )
+        for pid_str in result.stdout.strip().splitlines():
+            pid = int(pid_str)
+            if pid != current_pid:
+                os.kill(pid, signal.SIGTERM)
+    except Exception:
+        pass
+
+
 def main() -> None:
+    _kill_existing_instances()
     print(f"Bot polling started. Send /start to https://t.me/CoachlyyBot")
     offset = 0
     while True:
