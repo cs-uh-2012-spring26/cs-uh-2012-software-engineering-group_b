@@ -180,3 +180,48 @@ Implementation status:
 3. Wire booking/class reminder flow to channel-based notification dispatch.
 4. Update Swagger and README endpoint docs for recurring rules and notification preferences.
 5. Update UML class diagram to reflect strategy and factory classes.
+
+## 8. Class Diagram Update from Sprint 3A to Sprint3B
+
+![Class diagram](class_diagrams/sprint3b/class_diagram.svg)
+
+### Key Updates ###
+
+### 1. Shift to a Strict Layered Architecture (N-Tier Pattern)
+* The API controller classes (e.g., `BookingResource`, `Register`, `ClassListResource`) contained heavy business logic. They were responsible for parsing HTTP requests, enforcing business rules (like checking capacities or verifying user roles), and executing database queries directly.
+*  So We introduced a distinct **Service Layer** to act as an intermediary between the API controllers and the Database modules. 
+  * API Layer: Now strictly handles HTTP protocol concerns (parsing JSON payloads and returning appropriate HTTP status codes).
+  * Service Layer: Contains `AuthService`, `BookingService`, and `FitnessClassService`. These classes handle all domain logic, orchestration, and validations.
+  * Database Layer: Strictly handles data persistence and retrieval.
+
+### 2. Implementation of Data Transfer Objects (DTOs)
+* Previously, Database creation methods, such as `build_booking_document`, suffered from the "Long Parameter List" code smell, taking numerous primitive data types as individual arguments.
+* So we introduced the `BookingUser` class to serve as a Data Transfer Object (DTO). The `BookingService` now bundles related data into this single object before passing it down to the database layer. This drastically cleans up function signatures, improves type safety, and makes the application highly extensible if new data fields are required.
+
+### 3. Dedicated Token Management
+* Previously, logic for validating registration tokens and determining user roles (admin vs. trainer) was hard-coded inside the authentication endpoints.
+* Now token resolution was extracted into a dedicated `TokenService`. This ensures that the authentication logic relies on an abstraction for token validation, strictly adhering to the Single Responsibility Principle.
+
+### 4. New Features 6 & 7
+The refactored Service Layer cleanly accommodates the new feature requirements:
+* To support dynamic notification preferences (Email vs. Telegram), the architecture utilizes the Strategy Design Pattern.
+  * A `NotificationService` handles the orchestration: iterating through bookings, resolving users, and evaluating user preferences.
+  * An abstract `NotificationChannel` interface was created to define a standard `send()` method.
+  * Concrete implementations (`EmailNotificationChannel` and `TelegramNotificationChannel`) inherit from this interface and handle the specific external API calls (SendGrid and Telegram).
+* This adheres to the Open/Closed Principle. The system is open for extension (e.g., adding SMS or Push Notification channels later) but closed for modification (the core `NotificationService` and `FitnessClassService` do not need to be altered when new channels are added).
+
+* Feature 6 (Recurring Classes): The architecture now anticipates recurring classes. Future logic will be encapsulated entirely within the `FitnessClassService` (e.g., via a `create_recurring_classes` method) and mapped to a new `RECURRENCE_PATTERN` attribute in the `fitness_classes` database module, leaving the API controllers completely untouched.
+
+### 5. Summary of Class Diagram Changes
+1. Separation of API and DB which leads to dashed dependency lines no longer go directly from the API layer to the Database layer.
+2. We added new service nodes for `AuthService`, `BookingService`, `FitnessClassService`, and `TokenService`.
+3. We added delegation arrows moving strictly from API $\rightarrow$ Service $\rightarrow$ Database.
+4. We added the `BookingUser (DTO)` as an internal structure within the `bookings` database module.
+
+### 6. Implementation of User Inheritance (Addressing Sprint 3A Feedback)
+* previously, the system originally relied on a single `User` class/dictionary that used a `role` string attribute to differentiate between users. This required business logic to constantly rely on `if/else` checks (e.g., `if user.role == 'trainer'`), which violates the Open/Closed Principle and makes the code difficult to extend.
+* So now following the feedback, the domain model was refactored to utilize Inheritance and Polymorphism. 
+  * A base `User` abstraction holds shared attributes (like `email`, `name`, and `phone`).
+  * Specialized subclasses were introduced: `Member`, `Trainer`, and `Admin`.
+  * Distinct behaviors and responsibilities are now encapsulated within their respective classes. For example, the `Trainer` class now inherently models the ability to `create_class()` and `send_reminders()`, while the `Member` class dictates the ability to `book_class()`.
+  * This is reflected in the new `Database & Domain Layer` cluster of the class diagram, using the standard UML "empty arrowhead" to denote that `Member`, `Trainer`, and `Admin` directly inherit from `User`.

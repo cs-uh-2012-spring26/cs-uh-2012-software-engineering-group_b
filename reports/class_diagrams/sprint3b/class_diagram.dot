@@ -1,0 +1,107 @@
+digraph "classes_FitnessApp" {
+    rankdir=TB
+    charset="utf-8"
+    node [shape="record", style="solid", color="black", fontcolor="black", fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize="10", labeldistance="2.5"];
+
+    // --------------------------------------------------------
+    // API LAYER (Controllers)
+    // --------------------------------------------------------
+    subgraph cluster_api {
+        label="API Layer";
+        style=dashed;
+        
+        "app.apis.auth.Register" [label=<{Register|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+        "app.apis.auth.Login" [label=<{Login|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+        
+        "app.apis.fitness_class.ClassListResource" [label=<{ClassListResource|<br ALIGN="LEFT"/>|get()<br ALIGN="LEFT"/>post()<br ALIGN="LEFT"/>}>];
+        "app.apis.fitness_class.ClassReminderResource" [label=<{ClassReminderResource|<br ALIGN="LEFT"/>|post(class_id: str)<br ALIGN="LEFT"/>}>];
+        
+        "app.apis.booking.BookingResource" [label=<{BookingResource|<br ALIGN="LEFT"/>|post()<br ALIGN="LEFT"/>}>];
+        "app.apis.booking.BookingListByClassResource" [label=<{BookingListByClassResource|<br ALIGN="LEFT"/>|get(class_id: str)<br ALIGN="LEFT"/>}>];
+    }
+
+    // --------------------------------------------------------
+    // SERVICE LAYER (Business Logic & Strategy Pattern)
+    // --------------------------------------------------------
+    subgraph cluster_service {
+        label="Service Layer";
+        style=dashed;
+        
+        "app.services.auth_service.AuthService" [label=<{AuthService|<br ALIGN="LEFT"/>|register_user(data, role)<br ALIGN="LEFT"/>login_user(data)<br ALIGN="LEFT"/>}>];
+        "app.services.token_service.TokenService" [label=<{TokenService|<br ALIGN="LEFT"/>|_VALID_TOKENS: dict<br ALIGN="LEFT"/>|resolve_role(token)<br ALIGN="LEFT"/>is_valid(token)<br ALIGN="LEFT"/>}>];
+        "app.services.booking_service.BookingService" [label=<{BookingService|<br ALIGN="LEFT"/>|book_class(user_email, class_id)<br ALIGN="LEFT"/>}>];
+        "app.services.fitness_class_service.FitnessClassService" [label=<{FitnessClassService|<br ALIGN="LEFT"/>|create_class(payload)<br ALIGN="LEFT"/>send_reminders(class_id, sender_email)<br ALIGN="LEFT"/>}>];
+        
+        // Notification Strategy Pattern (Feature 7)
+        "app.services.notification_service.NotificationService" [label=<{NotificationService|<br ALIGN="LEFT"/>|_channels: dict<br ALIGN="LEFT"/>|send_for_bookings()<br ALIGN="LEFT"/>_resolve_user()<br ALIGN="LEFT"/>_normalized_preferences()<br ALIGN="LEFT"/>}>];
+        "app.services.notification_service.NotificationChannel" [label=<{NotificationChannel (Abstract)|<br ALIGN="LEFT"/>channel_name: str<br ALIGN="LEFT"/>|send(user, fitness_class, sender_email)<br ALIGN="LEFT"/>}>];
+        "app.services.notification_service.EmailNotificationChannel" [label=<{EmailNotificationChannel|<br ALIGN="LEFT"/>channel_name = 'email'<br ALIGN="LEFT"/>|send()<br ALIGN="LEFT"/>}>];
+        "app.services.notification_service.TelegramNotificationChannel" [label=<{TelegramNotificationChannel|<br ALIGN="LEFT"/>channel_name = 'telegram'<br ALIGN="LEFT"/>|send()<br ALIGN="LEFT"/>}>];
+        
+        "app.services.email_reminders" [label=<{email_reminders (Module)|<br ALIGN="LEFT"/>|send_single_class_reminder()<br ALIGN="LEFT"/>_build_reminder_message()<br ALIGN="LEFT"/>_sendgrid_send_email()<br ALIGN="LEFT"/>}>];
+    }
+
+    // --------------------------------------------------------
+    // DOMAIN & DATABASE LAYER (Inheritance & DTOs)
+    // --------------------------------------------------------
+    subgraph cluster_db {
+        label="Database & Domain Layer";
+        style=dashed;
+        
+        "app.db.users.User" [label=<{User (Abstract)|<br ALIGN="LEFT"/>USER_ID: str<br ALIGN="LEFT"/>NAME: str<br ALIGN="LEFT"/>EMAIL: str<br ALIGN="LEFT"/>NOTIFICATION_PREFERENCES: dict<br ALIGN="LEFT"/>|}>];
+        "app.db.users.Member" [label=<{Member|<br ALIGN="LEFT"/>|book_class()<br ALIGN="LEFT"/>}>];
+        "app.db.users.Trainer" [label=<{Trainer|<br ALIGN="LEFT"/>|create_class()<br ALIGN="LEFT"/>send_reminders()<br ALIGN="LEFT"/>}>];
+        "app.db.users.Admin" [label=<{Admin|<br ALIGN="LEFT"/>|create_class()<br ALIGN="LEFT"/>send_reminders()<br ALIGN="LEFT"/>}>];
+        
+        "app.db.users.users_module" [label=<{users (Module)|<br ALIGN="LEFT"/>|get_user_by_email()<br ALIGN="LEFT"/>get_user_by_user_id()<br ALIGN="LEFT"/>create_user(User)<br ALIGN="LEFT"/>}>];
+        
+        "app.db.fitness_classes" [label=<{fitness_classes (Module)|<br ALIGN="LEFT"/>CLASS_ID: str<br ALIGN="LEFT"/>CAPACITY: int<br ALIGN="LEFT"/>AVAILABLE_SPOTS: int<br ALIGN="LEFT"/>|get_class_by_class_id()<br ALIGN="LEFT"/>create_fitness_class()<br ALIGN="LEFT"/>}>];
+        
+        "app.db.bookings" [label=<{bookings (Module)|<br ALIGN="LEFT"/>BookingUser (DTO)<br ALIGN="LEFT"/>|list_bookings_by_class(class_id)<br ALIGN="LEFT"/>create_booking(booking)<br ALIGN="LEFT"/>}>];
+    }
+
+    // --------------------------------------------------------
+    // EXTERNAL INTEGRATIONS
+    // --------------------------------------------------------
+    "External.SendGridAPI" [label=<{SendGrid API|<br ALIGN="LEFT"/>|send()<br ALIGN="LEFT"/>}>];
+    "External.TelegramAPI" [label=<{Telegram API|<br ALIGN="LEFT"/>|sendMessage()<br ALIGN="LEFT"/>}>];
+
+    // ========================================================
+    // RELATIONSHIPS & MULTIPLICITIES
+    // ========================================================
+    
+    // Inheritance
+    "app.db.users.Member" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+    "app.db.users.Trainer" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+    "app.db.users.Admin" -> "app.db.users.User" [arrowhead="empty", label=" inherits"];
+    "app.services.notification_service.EmailNotificationChannel" -> "app.services.notification_service.NotificationChannel" [arrowhead="empty"];
+    "app.services.notification_service.TelegramNotificationChannel" -> "app.services.notification_service.NotificationChannel" [arrowhead="empty"];
+
+    // Data Associations
+    "app.db.users.User" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
+    "app.db.fitness_classes" -> "app.db.bookings" [arrowhead="none", taillabel="1", headlabel="0..n", label=" has"];
+
+    // API to SERVICE DELEGATION
+    "app.apis.auth.Register" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee"];
+    "app.apis.auth.Login" -> "app.services.auth_service.AuthService" [style="dashed", arrowhead="vee"];
+    "app.apis.fitness_class.ClassListResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee"];
+    "app.apis.fitness_class.ClassReminderResource" -> "app.services.fitness_class_service.FitnessClassService" [style="dashed", arrowhead="vee"];
+    "app.apis.booking.BookingResource" -> "app.services.booking_service.BookingService" [style="dashed", arrowhead="vee"];
+    
+    // SERVICE to DB LAYER
+        "app.services.auth_service.AuthService" -> "app.db.users.users_module" [style="dashed", arrowhead="vee"];
+    "app.services.booking_service.BookingService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee"];
+    "app.services.booking_service.BookingService" -> "app.db.bookings" [style="dashed", arrowhead="vee"];
+    "app.services.fitness_class_service.FitnessClassService" -> "app.db.fitness_classes" [style="dashed", arrowhead="vee"];
+    "app.services.fitness_class_service.FitnessClassService" -> "app.services.email_reminders" [style="dashed", arrowhead="vee"];
+    
+    // SERVICE to SERVICE DELEGATION
+    "app.services.fitness_class_service.FitnessClassService" -> "app.services.notification_service.NotificationService" [style="dashed", arrowhead="vee", label=" triggers"];
+    "app.services.notification_service.NotificationService" -> "app.services.notification_service.NotificationChannel" [style="dashed", arrowhead="vee", label=" uses"];
+    "app.services.notification_service.EmailNotificationChannel" -> "app.services.email_reminders" [style="dashed", arrowhead="vee"];
+     "app.services.auth_service.AuthService" -> "app.services.token_service.TokenService" [style="dashed", arrowhead="vee", label=" validates token"];
+    // EXTERNAL CALLS
+    "app.services.email_reminders" -> "External.SendGridAPI" [style="dashed", arrowhead="vee", label=" HTTP POST"];
+    "app.services.notification_service.TelegramNotificationChannel" -> "External.TelegramAPI" [style="dashed", arrowhead="vee", label=" HTTP POST"];
+}
