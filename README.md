@@ -24,7 +24,7 @@ This repo contains a Flask-RESTX API foundation for the Sprint 2 Fitness Class M
 - Reminder notifications support channel-based delivery with an extensible strategy design.
 - The current channels are Email and Telegram.
 - Required Telegram environment variable: `TELEGRAM_BOT_TOKEN`.
-- Telegram destination (`telegram_chat_id`) is stored per user through the auth preferences endpoint.
+- Telegram destination (`telegram_chat_id`) is linked automatically through a one-time deep-link token.
 
 ### 4) Unit testing updates
 
@@ -169,16 +169,32 @@ Active namespaces:
   - `POST /auth/register` → Register a new user and return JWT access_token
   - `POST /auth/login` → Authenticate existing user and return JWT access_token
   - `POST /auth/validate-token` → Validate a registration invite token
-  - `POST /auth/notification-preferences` → Update user notification preferences and telegram_chat_id
+  - `POST /auth/notification-preferences` → Update user notification preferences
+  - `POST /auth/telegram-link/start` → Generate one-time deep-link for Telegram account linking
 
 ## Sending Telegram Reminders
 
 To deliver class reminders through Telegram, complete all of the following:
 
 1. Set `TELEGRAM_BOT_TOKEN` in your `.env`.
-2. Ensure the target user has a valid `telegram_chat_id` and Telegram notifications enabled.
-3. Create/book a future class for that user.
-4. Trigger `POST /classes/<class_id>/reminders` using a trainer JWT.
+2. Keep `telegram_bot.py` running.
+3. User authenticates and calls `POST /auth/telegram-link/start`.
+4. UI opens the returned `deep_link`, which points to `https://t.me/CoachlyyBot?start=<one-time-token>`.
+5. User taps **Start** in Telegram (token is consumed and chat is linked).
+6. Enable Telegram in `POST /auth/notification-preferences`.
+7. Create/book a future class for that user.
+8. Trigger `POST /classes/<class_id>/reminders` using a trainer JWT.
+
+UI integration example (`Connect Telegram` button):
+
+```ts
+const response = await fetch("/auth/telegram-link/start", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const data = await response.json();
+window.location.href = data.deep_link;
+```
 
 Example preference update (authenticated as the target user):
 
@@ -187,15 +203,14 @@ Example preference update (authenticated as the target user):
   "notification_preferences": {
     "email": false,
     "telegram": true
-  },
-  "telegram_chat_id": "123456789"
+  }
 }
 ```
 
 Notes:
 - The API calls Telegram Bot API `sendMessage` under the hood.
 - If `TELEGRAM_BOT_TOKEN` is missing or invalid, reminder sending will fail at dispatch time.
-- The user must have started a chat with your bot so the `telegram_chat_id` is reachable.
+- Telegram linking tokens are one-time and expire quickly; expired links must be regenerated.
 
 ## Virtual Environment (Manual)
 

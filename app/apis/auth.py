@@ -8,14 +8,15 @@ from http import HTTPStatus
 from app.apis import MSG
 from app.exceptions import AppError
 from app.services.auth_service import AuthService
+from app.services.telegram_link_service import TelegramLinkService
 from app.services.token_service import TokenService
 
 api = Namespace(
     "auth",
     description=(
         "Endpoints for logging in, registering, and validating token. "
-        "For Telegram reminders: send /start to https://t.me/CoachlyyBot to receive your chat ID, "
-        "then set notification_preferences.telegram and telegram_chat_id."
+        "For Telegram reminders: request a deep-link via /auth/telegram-link/start and "
+        "open it to link your Telegram chat."
     ),
 )
 
@@ -27,7 +28,6 @@ register_model = api.model(
         "name": fields.String(required=True, example="John Trainer", description="User name"),
         "email": fields.String(required=True, example="john@example.com", description="User email"),
         "phone": fields.String(example="+971-504-555-0100", description="User phone"),
-        "telegram_chat_id": fields.String(example="123456789", description="Telegram chat id (required for telegram notifications)"),
         "notification_preferences": fields.Raw(
             example={"email": True, "telegram": False},
             description="Notification channels for reminders",
@@ -78,12 +78,19 @@ notification_preferences_model = api.model(
             example={"email": True, "telegram": True},
             description="Supported channels: email, telegram",
         ),
-        "telegram_chat_id": fields.String(
-            example="123456789",
-            description=(
-                "Telegram chat id (required when telegram is enabled and no chat id is saved). "
-                "Start bot: https://t.me/CoachlyyBot"
-            ),
+    },
+)
+
+telegram_link_start_response = api.model(
+    "TelegramLinkStartResponse",
+    {
+        "deep_link": fields.String(
+            example="https://t.me/CoachlyyBot?start=generated_one_time_token",
+            description="One-time Telegram deep-link token",
+        ),
+        "expires_at": fields.Integer(
+            example=1762387200,
+            description="Unix timestamp (seconds) when the deep-link expires",
         ),
     },
 )
@@ -221,6 +228,27 @@ class NotificationPreferences(Resource):
             "notification_preferences": updated_user.get("notification_preferences", {}),
             "telegram_chat_id": updated_user.get("telegram_chat_id"),
         }, HTTPStatus.OK
+
+
+@api.route('/telegram-link/start')
+class TelegramLinkStart(Resource):
+    """Generate a one-time Telegram deep-link for the authenticated user."""
+
+    @api.response(HTTPStatus.OK, "Telegram deep-link generated", telegram_link_start_response)
+    @api.response(HTTPStatus.UNAUTHORIZED, "Missing or invalid authorization header")
+    def post(self):
+        try:
+            verify_jwt_in_request()
+        except Exception:
+            return {MSG: "Missing or invalid authorization header"}, HTTPStatus.UNAUTHORIZED
+
+        user_email = get_jwt_identity()
+        try:
+            result = TelegramLinkService.create_deep_link_for_email(user_email)
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
+
+        return result, HTTPStatus.OK
 
 
 

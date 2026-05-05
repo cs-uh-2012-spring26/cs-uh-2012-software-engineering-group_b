@@ -11,6 +11,7 @@ from app.apis import MSG
 from app.db.fitness_classes import CAPACITY, DATETIME, TITLE, TRAINER_NAME
 # external imports
 import pytest
+import re
 from http import HTTPStatus
 from flask_jwt_extended import create_access_token
 
@@ -142,15 +143,33 @@ def test_update_notification_preferences_success(client, sample_member_auth, app
 
     response = client.post(
         "/auth/notification-preferences",
-        json={
-            "notification_preferences": {"email": True, "telegram": True},
-            "telegram_chat_id": "123456789",
-        },
+        json={"notification_preferences": {"email": True, "telegram": True}},
         headers={"Authorization": f"Bearer {member_token}"},
     )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json[MSG] == "Notification preferences updated"
+    assert response.json["notification_preferences"] == {"email": True, "telegram": True}
+
+
+def test_update_notification_preferences_telegram_without_chat_id(client, sample_member_auth, app):
+    """Telegram notifications can be enabled before chat_id is linked by the bot."""
+    m_uid, _ = sample_member_auth
+    user = get_user_by_user_id(m_uid)
+
+    with app.app_context():
+        member_token = create_access_token(
+            identity=user["email"],
+            additional_claims={"role": "member", "user_id": m_uid},
+        )
+
+    response = client.post(
+        "/auth/notification-preferences",
+        json={"notification_preferences": {"email": True, "telegram": True}},
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+
+    assert response.status_code == HTTPStatus.OK
     assert response.json["notification_preferences"] == {"email": True, "telegram": True}
 
 
@@ -179,6 +198,43 @@ def test_update_notification_preferences_validation(client, sample_member_auth, 
         headers={"Authorization": f"Bearer {member_token}"},
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    # Manual telegram chat id override no longer allowed
+    response = client.post(
+        "/auth/notification-preferences",
+        json={
+            "notification_preferences": {"email": True, "telegram": True},
+            "telegram_chat_id": "12345",
+        },
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_start_telegram_link_success(client, sample_member_auth, app):
+    """Authenticated user can request one-time Telegram deep-link."""
+    m_uid, _ = sample_member_auth
+    user = get_user_by_user_id(m_uid)
+
+    with app.app_context():
+        member_token = create_access_token(
+            identity=user["email"],
+            additional_claims={"role": "member", "user_id": m_uid},
+        )
+
+    response = client.post(
+        "/auth/telegram-link/start",
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert re.match(r"^https://t\.me/CoachlyyBot\?start=.+$", response.json["deep_link"])
+    assert isinstance(response.json["expires_at"], int)
+
+
+def test_start_telegram_link_requires_auth(client):
+    """Telegram deep-link endpoint rejects unauthenticated requests."""
+    response = client.post("/auth/telegram-link/start")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 def test_add_fitness_class_wrong_credentials(client, sample_member_auth, app):
     """Class creation endpoint denies missing, invalid, and unauthorized JWTs."""
