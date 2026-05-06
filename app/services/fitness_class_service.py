@@ -42,6 +42,9 @@ class FitnessClassService:
         if recurrence_type not in ["one_time", "daily", "weekly"]:
             raise ValidationError(f"{RECURRENCE_TYPE} must be 'one_time', 'daily', or 'weekly'")
         
+        if recurrence_type in ["daily", "weekly"] and not recurrence_end_date:
+            raise ValidationError(f"{RECURRENCE_END_DATE} is required for recurring classes")
+
         try:
             parsed_dt = dt_mod.fromisoformat(dt.replace("Z", "+00:00"))
         except (ValueError, AttributeError):
@@ -74,11 +77,11 @@ class FitnessClassService:
                         instance_dt, 
                         capacity, 
                         normalized_trainer_name,
-                        recurrence_type,
-                        recurrence_end_date
+                        recurrence_type=recurrence_type,
+                        recurrence_end_date=recurrence_end_date
                     )
-        created_instance = create_fitness_class(doc)
-        created_instances.append(created_instance)
+                created_instance = create_fitness_class(doc)
+                created_instances.append(created_instance)
 
         return created_instances[0] if created_instances else {}    
 
