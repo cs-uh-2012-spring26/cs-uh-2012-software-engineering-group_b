@@ -34,6 +34,22 @@ def _collection():
 	return DB.get_collection(USER_COLLECTION)
 
 
+def normalize_phone(phone: str | None) -> str | None:
+	"""Normalize phone numbers for matching/storage consistency."""
+	if not isinstance(phone, str):
+		return None
+	raw = phone.strip()
+	if not raw:
+		return None
+
+	has_plus = raw.startswith("+")
+	digits = "".join(char for char in raw if char.isdigit())
+	if not digits:
+		return None
+
+	return f"+{digits}" if has_plus else digits
+
+
 def get_user_by_user_id(user_id: str) -> dict | None:
 	"""Fetch one user by `user_id` from the users collection."""
 	user = _collection().find_one({USER_ID: user_id})
@@ -45,9 +61,30 @@ def get_user_by_email(email: str) -> dict | None:
 	return serialize_item(user)
 
 def get_user_by_phone(phone: str) -> dict | None:
-	"""Fetch one user by 'phone' from the users collection"""
-	user = _collection().find_one({PHONE: phone})
-	return serialize_item(user)
+	"""Fetch one user by phone from the users collection."""
+	raw_phone = phone.strip() if isinstance(phone, str) else ""
+	if not raw_phone:
+		return None
+
+	normalized_phone = normalize_phone(raw_phone)
+
+	# Fast-path exact matches first.
+	user = _collection().find_one({PHONE: raw_phone})
+	if user is not None:
+		return serialize_item(user)
+
+	if normalized_phone and normalized_phone != raw_phone:
+		user = _collection().find_one({PHONE: normalized_phone})
+		if user is not None:
+			return serialize_item(user)
+
+	# Fallback for legacy formats already stored in DB.
+	if normalized_phone:
+		for candidate in _collection().find({PHONE: {"$ne": None}}):
+			if normalize_phone(candidate.get(PHONE)) == normalized_phone:
+				return serialize_item(candidate)
+
+	return None
 
 def build_user_document(
 	name: str,
@@ -62,6 +99,7 @@ def build_user_document(
 ) -> dict:
 	"""Build a normalized user document ready for persistence."""
 	now = datetime.utcnow().isoformat()
+	normalized_phone = normalize_phone(phone)
 	default_preferences = {"email": True, "telegram": False}
 	if isinstance(notification_preferences, dict):
 		default_preferences.update({
@@ -73,7 +111,7 @@ def build_user_document(
 		USER_ID: user_id or str(uuid4()),
 		NAME: name,
 		EMAIL: email,
-		PHONE: phone,
+		PHONE: normalized_phone,
 		BIRTH_DATE: birth_date,
 		PASSWORD_HASH: password_hash,
 		ROLE: role,
@@ -95,7 +133,6 @@ def create_user(user: dict) -> dict:
 def update_user_notification_preferences(
 	user_email: str,
 	notification_preferences: dict,
-	telegram_chat_id: str | None = None,
 ) -> dict | None:
 	"""Update one user's notification preferences and return updated document."""
 	now = datetime.utcnow().isoformat()
@@ -107,12 +144,27 @@ def update_user_notification_preferences(
 		UPDATED_AT: now,
 	}
 
-	if telegram_chat_id is not None:
-		set_fields[TELEGRAM_CHAT_ID] = telegram_chat_id
-
 	updated_user = _collection().find_one_and_update(
 		{EMAIL: user_email},
 		{"$set": set_fields},
+		return_document=ReturnDocument.AFTER,
+	)
+	return serialize_item(updated_user)
+
+
+def update_user_telegram_chat_id_by_user_id(user_id: str, telegram_chat_id: str) -> dict | None:
+	"""Map a Telegram chat id to a user by user id."""
+	if not isinstance(user_id, str) or not user_id.strip():
+		return None
+
+	chat_id = telegram_chat_id.strip() if isinstance(telegram_chat_id, str) else ""
+	if not chat_id:
+		return None
+
+	now = datetime.utcnow().isoformat()
+	updated_user = _collection().find_one_and_update(
+		{USER_ID: user_id},
+		{"$set": {TELEGRAM_CHAT_ID: chat_id, UPDATED_AT: now}},
 		return_document=ReturnDocument.AFTER,
 	)
 	return serialize_item(updated_user)

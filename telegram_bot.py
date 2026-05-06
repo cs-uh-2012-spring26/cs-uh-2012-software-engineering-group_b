@@ -1,6 +1,6 @@
 """
 Run this script alongside the Flask app for local development.
-It polls Telegram for new messages and replies with the sender's chat_id.
+It polls Telegram for new messages and links Telegram chat_id via one-time deep-links.
 
 Usage:
     python telegram_bot.py
@@ -12,6 +12,10 @@ from urllib import error, request as urllib_request
 
 from dotenv import load_dotenv
 
+from app import create_app
+from app.exceptions import ValidationError
+from app.services.telegram_link_service import TelegramLinkService
+
 load_dotenv()
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
@@ -22,11 +26,18 @@ BASE_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 START_REPLY = (
     "Welcome to CoachlyyBot!\n\n"
-    "Your Telegram chat ID is: {chat_id}\n\n"
-    "Copy this ID and use it when registering or updating your notification "
-    "preferences in the app to receive class reminders here."
+    "To link reminders to your account, open Telegram using the "
+    "'Connect Telegram' button from the app."
 )
-FALLBACK_REPLY = "Send /start to get your Telegram chat ID for use with the Coachlyy app."
+LINKED_REPLY = (
+    "Great, your Telegram account is now linked.\n"
+    "If Telegram reminders are enabled in the app, future class reminders will be sent here."
+)
+INVALID_LINK_REPLY = (
+    "This link is invalid or expired.\n"
+    "Please generate a new Telegram connect link in the app and try again."
+)
+FALLBACK_REPLY = "Use the app's 'Connect Telegram' button, then return to this chat."
 
 
 def _api(method: str, payload: dict) -> dict:
@@ -41,9 +52,12 @@ def _api(method: str, payload: dict) -> dict:
         return json.loads(resp.read())
 
 
-def send_message(chat_id: int | str, text: str) -> None:
+def send_message(chat_id: int | str, text: str, reply_markup: dict | None = None) -> None:
     try:
-        _api("sendMessage", {"chat_id": chat_id, "text": text})
+        payload = {"chat_id": chat_id, "text": text}
+        if reply_markup is not None:
+            payload["reply_markup"] = reply_markup
+        _api("sendMessage", payload)
     except error.URLError as exc:
         print(f"[warn] sendMessage failed: {exc}")
 
@@ -65,15 +79,45 @@ def get_updates(offset: int) -> list[dict]:
         return []
 
 
+def _extract_start_payload(text: str) -> str | None:
+    if not text.startswith("/start"):
+        return None
+    parts = text.split(maxsplit=1)
+    if len(parts) < 2:
+        return None
+    payload = parts[1].strip()
+    return payload or None
+
+
 def handle(message: dict) -> None:
     chat_id = message.get("chat", {}).get("id")
     text = (message.get("text") or "").strip()
     if not chat_id:
         return
-    if text.startswith("/start") or text.startswith("/id"):
-        send_message(chat_id, START_REPLY.format(chat_id=chat_id))
-    else:
-        send_message(chat_id, FALLBACK_REPLY)
+
+    start_payload = _extract_start_payload(text)
+    if start_payload:
+        try:
+            linked_user = TelegramLinkService.consume_start_payload_and_link_chat(
+                start_payload=start_payload,
+                chat_id=str(chat_id),
+            )
+        except ValidationError:
+            linked_user = None
+
+        if linked_user is not None:
+            send_message(chat_id, LINKED_REPLY)
+            print(f"[info] linked chat_id={chat_id} to user_id={linked_user.get('user_id')}")
+        else:
+            send_message(chat_id, INVALID_LINK_REPLY)
+            print(f"[warn] invalid/expired telegram link, chat_id={chat_id}")
+        return
+
+    if text.startswith("/start"):
+        send_message(chat_id, START_REPLY)
+        return
+
+    send_message(chat_id, FALLBACK_REPLY)
 
 
 def _kill_existing_instances() -> None:
@@ -95,8 +139,10 @@ def _kill_existing_instances() -> None:
 
 
 def main() -> None:
+    # Initializes DB connection through Flask app config.
+    create_app()
     _kill_existing_instances()
-    print(f"Bot polling started. Send /start to https://t.me/CoachlyyBot")
+    print("Bot polling started. Send /start to https://t.me/CoachlyyBot")
     offset = 0
     while True:
         updates = get_updates(offset)

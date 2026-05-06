@@ -29,9 +29,9 @@ def create_app(test_config = None):
         title="Fitness Class booking and management system",
         version="(Sprint 1)",
         description=(
-            "endpoints for booking, creating classes, and rudimentary account management\n\n"
-            "Telegram setup for reminders: open https://t.me/CoachlyyBot, send /start, "
-            "copy the chat ID the bot replies with, then save it with POST /auth/notification-preferences."
+            "endpoints for booking, creating classes, and account management\n\n"
+            "Telegram setup for reminders: call /auth/telegram-link/start, "
+            "open the returned deep-link, then send /start from that link."
         ),
         authorizations={
             "Bearer Auth": {
@@ -40,7 +40,7 @@ def create_app(test_config = None):
                 "name": "Authorization",
                 "description": (
                     'Add a JWT token to the header with ** "Bearer &lt;JWT&gt;"** token to authorize. '
-                    "For Telegram reminders, start the bot at https://t.me/CoachlyyBot"
+                    "For Telegram reminders, generate a link via /auth/telegram-link/start and open it"
                 ),
             }
         },

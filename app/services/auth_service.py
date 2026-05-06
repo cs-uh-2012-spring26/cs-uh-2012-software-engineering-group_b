@@ -6,6 +6,7 @@ from app.db.users import (
     create_user,
     get_user_by_email,
     get_user_by_phone,
+    normalize_phone,
     update_user_notification_preferences,
 )
 from app.exceptions import DomainError, NotFoundError, ValidationError
@@ -27,7 +28,8 @@ class AuthService:
         if get_user_by_email(email) is not None:
             raise DomainError("Email already registered")
 
-        if phone and get_user_by_phone(phone) is not None:
+        normalized_phone = normalize_phone(phone)
+        if normalized_phone and get_user_by_phone(normalized_phone) is not None:
             raise DomainError("Phone already registered")
 
         password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -37,10 +39,9 @@ class AuthService:
             email=email,
             password_hash=password_hash,
             role=role,
-            phone=phone,
+            phone=normalized_phone,
             birth_date=data.get("birth_date"),
             notification_preferences=data.get("notification_preferences"),
-            telegram_chat_id=data.get("telegram_chat_id"),
         )
         return create_user(user_doc)
 
@@ -91,20 +92,14 @@ class AuthService:
             "telegram": bool(preferences.get("telegram", False)),
         }
 
-        telegram_chat_id = data.get("telegram_chat_id")
-        if telegram_chat_id is not None and not isinstance(telegram_chat_id, str):
-            raise ValidationError("telegram_chat_id must be a string")
-
-        if normalized_preferences["telegram"] and not (
-            (isinstance(telegram_chat_id, str) and telegram_chat_id.strip())
-            or (isinstance(user.get("telegram_chat_id"), str) and user.get("telegram_chat_id").strip())
-        ):
-            raise ValidationError("telegram_chat_id is required when telegram notifications are enabled")
+        if "telegram_chat_id" in data:
+            raise ValidationError(
+                "telegram_chat_id cannot be set manually; use /auth/telegram-link/start"
+            )
 
         updated_user = update_user_notification_preferences(
             user_email=user_email,
             notification_preferences=normalized_preferences,
-            telegram_chat_id=telegram_chat_id,
         )
         if updated_user is None:
             raise NotFoundError("User not found!")
