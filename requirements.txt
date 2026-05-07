@@ -9,6 +9,5 @@ email-validator==2.2.0
 bcrypt==4.3.0
 Flask-APScheduler==1.13.1
 boto3==1.39.8
-flask_cors==6.0.1
 python-dateutil==2.9.0
 sendgrid==6.12.5
