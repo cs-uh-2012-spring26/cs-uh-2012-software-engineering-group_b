@@ -1,0 +1,71 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production VM
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    steps:
+      - name: Deploy over SSH using PEM key
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+
+            APP_DIR="${{ secrets.PROD_APP_DIR }}"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+            DEPLOY_SHA="${{ github.event.workflow_run.head_sha }}"
+
+            if [ -z "$APP_DIR" ]; then
+              echo "PROD_APP_DIR secret is required"
+              exit 1
+            fi
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone "$REPO_URL" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+
+            git fetch origin main
+            git checkout main
+            if [ -n "$DEPLOY_SHA" ]; then
+              git checkout --detach "$DEPLOY_SHA"
+            else
+              git pull --ff-only origin main
+            fi
+
+            cat > .env <<EOF
+            DB_URI=${{ secrets.PROD_DB_URI }}
+            DB_NAME=${{ secrets.PROD_DB_NAME }}
+            DEBUG=${{ secrets.PROD_DEBUG }}
+            JWT_SECRET_KEY=${{ secrets.PROD_JWT_SECRET_KEY }}
+            SENDGRID_API_KEY=${{ secrets.PROD_SENDGRID_API_KEY }}
+            SENDGRID_FROM_EMAIL=${{ secrets.PROD_SENDGRID_FROM_EMAIL }}
+            SENDGRID_ACCOUNT_EMAIL=${{ secrets.PROD_SENDGRID_ACCOUNT_EMAIL }}
+            TELEGRAM_BOT_TOKEN=${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}
+            EOF
+
+            sudo docker compose down
+            sudo docker compose up -d --build --remove-orphans
+            sudo docker image prune -f
