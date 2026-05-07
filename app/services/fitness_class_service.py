@@ -22,6 +22,43 @@ class FitnessClassService:
     """Business logic for class lifecycle and reminders."""
 
     @staticmethod
+    def _parse_iso_datetime(value: str, field_name: str) -> dt_mod:
+        try:
+            parsed = dt_mod.fromisoformat(value.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            raise ValidationError(f"{field_name} must be a valid datetime string")
+
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+
+        return parsed
+
+    @staticmethod
+    def _normalize_recurrence_end_date(raw_end_date: str, start_dt: dt_mod) -> tuple[dt_mod, str]:
+        # Accept date-only values from UI (YYYY-MM-DD) by aligning to start time in UTC.
+        if isinstance(raw_end_date, str) and "T" not in raw_end_date:
+            try:
+                parsed_date = dt_mod.fromisoformat(raw_end_date)
+            except (ValueError, AttributeError):
+                raise ValidationError(f"{RECURRENCE_END_DATE} must be a valid datetime string")
+
+            parsed_end_dt = dt_mod(
+                parsed_date.year,
+                parsed_date.month,
+                parsed_date.day,
+                start_dt.hour,
+                start_dt.minute,
+                start_dt.second,
+                start_dt.microsecond,
+                tzinfo=start_dt.tzinfo or timezone.utc,
+            )
+        else:
+            parsed_end_dt = FitnessClassService._parse_iso_datetime(raw_end_date, RECURRENCE_END_DATE)
+
+        normalized_end = parsed_end_dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        return parsed_end_dt, normalized_end
+
+    @staticmethod
     def create_class(payload: dict) -> dict:
         title = payload.get(TITLE)
         dt = payload.get(DATETIME)
@@ -39,22 +76,19 @@ class FitnessClassService:
         if not isinstance(title, str) or not isinstance(trainer_name, str) or not title.strip() or not trainer_name.strip():
             raise ValidationError(f"{TITLE} and {TRAINER_NAME} must be non-empty strings")
         
-        if recurrence_type not in ["one_time", "daily", "weekly"]:
-            raise ValidationError(f"{RECURRENCE_TYPE} must be 'one_time', 'daily', or 'weekly'")
+        if recurrence_type not in ["one_time", "daily", "weekly", "monthly"]:
+            raise ValidationError(f"{RECURRENCE_TYPE} must be 'one_time', 'daily', 'weekly', or 'monthly'")
         
-        if recurrence_type in ["daily", "weekly"] and not recurrence_end_date:
+        if recurrence_type in ["daily", "weekly", "monthly"] and not recurrence_end_date:
             raise ValidationError(f"{RECURRENCE_END_DATE} is required for recurring classes")
 
-        try:
-            parsed_dt = dt_mod.fromisoformat(dt.replace("Z", "+00:00"))
-        except (ValueError, AttributeError):
-            raise ValidationError(f"{DATETIME} must be a valid datetime string")
+        parsed_dt = FitnessClassService._parse_iso_datetime(dt, DATETIME)
     
         if recurrence_end_date:
-            try:
-                parsed_end_dt = dt_mod.fromisoformat(recurrence_end_date.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                raise ValidationError(f"{RECURRENCE_END_DATE} must be a valid datetime string")
+            parsed_end_dt, recurrence_end_date = FitnessClassService._normalize_recurrence_end_date(
+                recurrence_end_date,
+                parsed_dt,
+            )
             if parsed_end_dt <= parsed_dt:
                 raise ValidationError(f"{RECURRENCE_END_DATE} must be after the start datetime")
 

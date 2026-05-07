@@ -46,11 +46,21 @@ services:
       retries: 10
       start_period: 15s
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
   telegram_bot:
     build:
       context: .
       dockerfile: Dockerfile
-    profiles: ["telegram"]
     restart: unless-stopped
     depends_on:
       mongo:

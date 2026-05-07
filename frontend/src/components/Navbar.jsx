@@ -16,6 +16,7 @@ export default function Navbar() {
       <Link to="/classes">Classes</Link>
       {isAuthenticated ? (
         <>
+          <Link to="/settings">Settings</Link>
           {(user?.role === 'trainer' || user?.role === 'admin') && (
             <Link to="/classes/create">+ Create Class</Link>
           )}

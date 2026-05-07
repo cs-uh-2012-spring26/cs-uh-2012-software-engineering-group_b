@@ -81,6 +81,21 @@ notification_preferences_model = api.model(
     },
 )
 
+notification_preferences_response_model = api.model(
+    "NotificationPreferencesResponse",
+    {
+        "message": fields.String(example="Notification preferences fetched"),
+        "notification_preferences": fields.Raw(
+            example={"email": True, "telegram": False},
+            description="Current user notification preferences",
+        ),
+        "telegram_chat_id": fields.String(
+            example="123456789",
+            description="Linked Telegram chat id (null when not linked)",
+        ),
+    },
+)
+
 telegram_link_start_response = api.model(
     "TelegramLinkStartResponse",
     {
@@ -203,6 +218,27 @@ class Login(Resource):
 @api.route('/notification-preferences')
 class NotificationPreferences(Resource):
     """Update notification preferences for the authenticated user."""
+
+    @api.response(HTTPStatus.OK, "Notification preferences fetched", notification_preferences_response_model)
+    @api.response(HTTPStatus.UNAUTHORIZED, "Missing or invalid authorization header")
+    def get(self):
+        """GET NOTIFICATION PREFERENCES: authenticated users only"""
+        try:
+            verify_jwt_in_request()
+        except Exception:
+            return {MSG: "Missing or invalid authorization header"}, HTTPStatus.UNAUTHORIZED
+
+        user_email = get_jwt_identity()
+        try:
+            current = AuthService.get_notification_preferences(user_email)
+        except AppError as exc:
+            return {MSG: exc.message}, exc.status_code
+
+        return {
+            MSG: "Notification preferences fetched",
+            "notification_preferences": current.get("notification_preferences", {}),
+            "telegram_chat_id": current.get("telegram_chat_id"),
+        }, HTTPStatus.OK
 
     @api.expect(notification_preferences_model)
     @api.response(HTTPStatus.OK, "Notification preferences updated")

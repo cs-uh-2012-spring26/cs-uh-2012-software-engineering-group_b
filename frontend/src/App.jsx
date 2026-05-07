@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ClassesPage from './pages/ClassesPage'
 import CreateClassPage from './pages/CreateClassPage'
+import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
   return (
@@ -22,6 +23,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={['trainer', 'admin']}>
                 <CreateClassPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

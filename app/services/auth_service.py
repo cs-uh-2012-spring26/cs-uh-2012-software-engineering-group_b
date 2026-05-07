@@ -68,6 +68,24 @@ class AuthService:
         return user
 
     @staticmethod
+    def get_notification_preferences(user_email: str) -> dict:
+        user = get_user_by_email(user_email)
+        if user is None:
+            raise NotFoundError("User not found!")
+
+        preferences = user.get("notification_preferences")
+        if not isinstance(preferences, dict):
+            preferences = {}
+
+        return {
+            "notification_preferences": {
+                "email": bool(preferences.get("email", True)),
+                "telegram": bool(preferences.get("telegram", False)),
+            },
+            "telegram_chat_id": user.get("telegram_chat_id"),
+        }
+
+    @staticmethod
     def update_notification_preferences(user_email: str, data: dict) -> dict:
         user = get_user_by_email(user_email)
         if user is None:

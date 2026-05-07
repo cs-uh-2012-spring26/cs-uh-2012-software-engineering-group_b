@@ -244,6 +244,31 @@ def test_generate_weekly_class_with_end_date():
     assert instances[1] == "2036-05-22T10:00:00Z"
     assert instances[2] == "2036-05-29T10:00:00Z"
 
+def test_generate_monthly_class_with_end_date():
+    """Monthly recurrence generates instances at month intervals."""
+    from app.db.fitness_classes import generate_recurring_instances
+
+    start_dt = "2036-01-31T10:00:00Z"
+    end_dt = "2036-03-31T10:00:00Z"
+    instances = generate_recurring_instances(start_dt, "monthly", end_dt)
+
+    assert len(instances) == 3
+    assert instances[0] == "2036-01-31T10:00:00Z"
+    assert instances[1] == "2036-02-29T10:00:00Z"
+    assert instances[2] == "2036-03-29T10:00:00Z"
+
+def test_add_fitness_class_recurring_accepts_date_only_end_date(client, trainer_headers):
+    """Recurring class creation accepts date-only end date values from UI."""
+    response = client.post("/classes/", json = {
+        TITLE: "Weekly Strength",
+        DATETIME: "2036-02-20T09:00:00Z",
+        CAPACITY: 20,
+        TRAINER_NAME: "Alex Trainer",
+        "recurrence_type": "weekly",
+        "recurrence_end_date": "2036-03-20"
+    }, headers=trainer_headers)
+    assert response.status_code == HTTPStatus.CREATED
+
 def test_add_fitness_class_invalid_recurrence_type(client, trainer_headers):
     """Invalid recurrence_type is rejected."""
     response = client.post("/classes/", json = {
