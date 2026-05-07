@@ -36,3 +36,5 @@ empty_db.py
 seed_db.py
 .DS_Store
 **/.DS_Store
+
+node_modules/node_modules/
