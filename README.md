@@ -1,202 +1,448 @@
 ![CI Pipeline](https://github.com/cs-uh-2012-spring26/cs-uh-2012-software-engineering-group_b/actions/workflows/ci.yml/badge.svg)
 
-# Fitness Class Management System API
+# Fitness Class Management System
 
-This repo contains a Flask-RESTX API foundation for the Sprint 2 Fitness Class Management System.
+A full-stack fitness class booking platform built with **Flask-RESTX** (backend API) and **React** (frontend). Users can register, browse fitness classes, book sessions, and receive reminders via email or Telegram. Trainers and admins can create classes (including recurring ones) and send notifications to attendees.
 
-## Recent Updates
+> **Bonus Frontend deployed at:** `http://<VM_IP>:3000` *(update this URL once your VM is provisioned)*
 
-### 1) CI implementation (GitHub Actions)
+---
 
-- A CI workflow is configured and published via the repository badge at the top of this README.
-- On each push/PR, the pipeline validates the project by installing dependencies and running automated checks.
-- This gives quick feedback on regressions and keeps the default branch stable.
+## Table of Contents
 
-### 2) Email reminder sending with SendGrid SDK
+1. [Features](#features)
+2. [Project Structure](#project-structure)
+3. [Tech Stack](#tech-stack)
+4. [Running with Docker (Recommended)](#running-with-docker-recommended)
+5. [Running Locally (Without Docker)](#running-locally-without-docker)
+6. [Frontend Development](#frontend-development)
+7. [Environment Variables](#environment-variables)
+8. [API Endpoints](#api-endpoints)
+9. [Authentication & Authorization](#authentication--authorization)
+10. [Recurring Classes (Feature 6)](#recurring-classes-feature-6)
+11. [Telegram Notifications (Feature 7)](#telegram-notifications-feature-7)
+12. [CI/CD Pipeline](#cicd-pipeline)
+13. [Running Tests](#running-tests)
 
-- Reminder delivery now uses the official SendGrid Python SDK (`sendgrid`) for outbound emails.
-- The reminder service builds class-based reminder content and sends one email per recipient with deterministic recipient normalization.
-- Required environment variable: `SENDGRID_API_KEY`.
-- Optional environment variable: `SENDGRID_FROM_EMAIL` (defaults to `noreply@coachly.dev` when not provided).
+---
 
-### 3) Configurable reminder notifications (Email + Telegram)
+## Features
 
-- Reminder notifications support channel-based delivery with an extensible strategy design.
-- The current channels are Email and Telegram.
-- Required Telegram environment variable: `TELEGRAM_BOT_TOKEN`.
-- Telegram destination (`telegram_chat_id`) is linked automatically through a one-time deep-link token.
+1. **User Registration & Login** — JWT-based auth with role assignment (member, trainer, admin)
+2. **View Fitness Classes** — Public class listing with availability info
+3. **Book a Class** — Members can RSVP to any class with available spots
+4. **Create a Class** — Trainers and admins can create one-time or recurring classes
+5. **View Class Bookings** — Trainers and admins can see who has booked a class
+6. **Recurring Classes** — Create daily or weekly repeating classes with an end date
+7. **Configurable Notifications** — Per-user opt-in for Email and/or Telegram reminders
+8. **React Frontend** — GUI for login/logout, browsing classes, booking, and creating classes
 
-### 4) Unit testing updates
+---
 
-- Added/updated unit tests for the email reminder service flow in `tests/unit/test_email_reminders_service.py`.
-- Tests cover message building, recipient normalization, API key validation, successful sends, rejected SendGrid statuses, and wrapped transport errors.
-- Test doubles now mock SendGrid SDK client behavior for deterministic service-level tests.
-
-Current scaffolded features:
-
-1. Create Class (trainer/admin) — endpoint template
-2. View Class List (guest/member) — endpoint template
-3. Book a Class (guest/member/member-only by current TODO note) — endpoint template
-4. View Member/Guest List for a class (trainer/admin) — endpoint template
-5. User Registration and Login (guest/member/trainer/admin) — endpoint template
-6. Send Reminder Emails (trainer) — endpoint template
-
-The current implementation is intentionally boilerplate-first and returns `501 Not Implemented` for feature endpoints while preserving API contracts and TODOs.
-
-## Prerequisites
-
-- python 3.10 or higher
-- MongoDB installed. Follow [https://www.mongodb.com/docs/manual/installation/](https://www.mongodb.com/docs/manual/installation/)
-to install MongoDB locally. Select the right link for your operating system.
-
-## Current Project Structure
+## Project Structure
 
 ```text
 .
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                # CI pipeline for automated checks on push/PR
+│       └── ci.yml                     # CI pipeline (runs tests on every push/PR to main)
 ├── app/
-│   ├── __init__.py                # Flask app factory and namespace registration
-│   ├── config.py                  # Environment-driven app config
+│   ├── __init__.py                    # Flask app factory, JWT + CORS setup
+│   ├── config.py                      # Environment-driven configuration
+│   ├── exceptions.py                  # Custom exception hierarchy
 │   ├── apis/
-│   │   ├── __init__.py            # Shared API constants (e.g., message key)
-│   │   ├── auth.py                # Feature 5 endpoints (login, register, validate token)
-│   │   ├── booking.py             # Feature 3 + Feature 4 endpoints
-│   │   ├── decorators.py          # Custom decorators (e.g., role-based access JWT checks)
-│   │   └── fitness_class.py       # Feature 1 + Feature 2 endpoints
-│   └── db/
-│       ├── __init__.py            # DB client setup
-│       ├── bookings.py            # Booking collection/fields
-│       ├── constants.py           # Generic DB constants
-│       ├── fitness_classes.py     # Fitness class collection/fields
-│       ├── users.py               # User collection/role field definitions
-│       └── utils.py               # Serialization helpers
+│   │   ├── __init__.py                # Shared API constants
+│   │   ├── auth.py                    # Auth endpoints (register, login, telegram link)
+│   │   ├── booking.py                 # Booking endpoints
+│   │   ├── decorators.py              # Role-based JWT access control
+│   │   └── fitness_class.py           # Class endpoints (list, create, reminders)
+│   ├── db/
+│   │   ├── __init__.py                # DB client (mongomock or pymongo)
+│   │   ├── bookings.py                # Booking collection queries
+│   │   ├── constants.py               # Shared DB constants
+│   │   ├── fitness_classes.py         # Fitness class collection queries
+│   │   ├── telegram_links.py          # One-time Telegram link tokens
+│   │   ├── users.py                   # User collection queries
+│   │   └── utils.py                   # Serialization helpers
 │   └── services/
-│       ├── __init__.py
-│       └── email_reminders.py     # SendGrid-based reminder email orchestration
-├── docs/
-├── reports/                       # Requirements/spec artifacts
+│       ├── auth_service.py            # Registration and login logic
+│       ├── booking_service.py         # Class booking logic
+│       ├── email_reminders.py         # SendGrid email delivery
+│       ├── fitness_class_service.py   # Class creation and reminder dispatch
+│       ├── notification_service.py    # Multi-channel notification strategy
+│       ├── telegram_link_service.py   # Telegram deep-link generation
+│       └── token_service.py           # Invite token validation
+├── frontend/
+│   ├── src/
+│   │   ├── api/client.js              # Axios instance (proxy-aware, auto-injects JWT)
+│   │   ├── context/AuthContext.jsx    # JWT auth state (login, logout, role)
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx             # Top navigation bar
+│   │   │   └── ProtectedRoute.jsx     # Route guard for authenticated pages
+│   │   └── pages/
+│   │       ├── LoginPage.jsx          # Login form
+│   │       ├── RegisterPage.jsx       # Registration form
+│   │       ├── ClassesPage.jsx        # Class listing + booking
+│   │       └── CreateClassPage.jsx    # Create class form (trainer/admin)
+│   ├── Dockerfile                     # Multi-stage build: Node → nginx
+│   ├── nginx.conf                     # nginx config with API proxy_pass to backend
+│   ├── package.json
+│   └── vite.config.js                 # Vite dev server with proxy to backend
 ├── tests/
-│   ├── __init__.py
 │   ├── unit/
-│   │   ├── __init__.py
-│   │   ├── conftest.py            # Pytest fixtures
-│   │   ├── test_auth_api.py       # Auth endpoint tests
-│   │   ├── test_booking_api.py    # Booking endpoint tests
-│   │   ├── test_email_reminders_service.py  # Email reminder service unit tests
-│   │   ├── test_fitness_api.py    # Fitness class endpoint tests
-│   │   └── test_general.py        # General API sanity and behavior tests
-│   └── utils.py                   # Testing utilities
+│   │   ├── conftest.py                # Pytest fixtures
+│   │   ├── test_auth_api.py
+│   │   ├── test_booking_api.py
+│   │   ├── test_email_reminders_service.py
+│   │   ├── test_fitness_api.py
+│   │   └── test_general.py
+│   └── utils.py
+├── reports/
+│   ├── final_reflection.md            # Sprint 4 team reflection
+│   └── ...                            # Prior sprint reports
+├── Dockerfile                         # Backend Docker image (Python 3.12 + Flask)
+├── docker-compose.yml                 # Orchestrates mongo + api + frontend (+ telegram_bot)
+├── telegram_bot.py                    # Telegram bot long-polling process
+├── seed_db.py                         # Seed the database with sample data
 ├── makefile
 ├── requirements.txt
 └── requirements-dev.txt
 ```
 
+---
+
 ## Tech Stack
 
-This Flask web app uses:
+**Backend**
+- [Flask-RESTX](https://flask-restx.readthedocs.io/) — REST API with auto-generated Swagger UI
+- [PyMongo](https://pymongo.readthedocs.io/) — MongoDB driver
+- [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/) — JWT authentication
+- [Flask-CORS](https://flask-cors.readthedocs.io/) — Cross-origin resource sharing
+- [SendGrid Python SDK](https://github.com/sendgrid/sendgrid-python) — Email reminders
+- [bcrypt](https://pypi.org/project/bcrypt/) — Password hashing
 
-- [Flask-RESTX][flask-restx] for creating REST APIs. Directory structure follows [flask restx instructions on scaling your project][flask-restx-scaling]
-  - flask-restx automatically generates
-  [OpenAPI specifications][openapi-specification] for your API
-- [PyMongo][pymongo] for communicating with the mongodb database
-- [pytest][pytest] for testing
-(see [flask specific testing instructions on pytest][pytest-flask]
-for more info specific to testing Flask applications)
-- [mongomock][mongomock] for mocking the mongodb during unit testing
-- [SendGrid Python SDK][sendgrid-sdk] for reminder email delivery
-- [requests][requests-docs] for HTTP client integrations/utilities
-- [pytest-mock][pytest-mock] for clean mocking patterns in unit tests
-- [pytest-cov][pytest-cov] for coverage reporting
-- [GitHub Actions][gha] for CI automation
+**Frontend**
+- [React 18](https://react.dev/) — UI library
+- [Vite](https://vitejs.dev/) — Build tool and dev server
+- [React Router v6](https://reactrouter.com/) — Client-side routing
+- [Axios](https://axios-http.com/) — HTTP client
 
-[flask-restx]: https://flask-restx.readthedocs.io/en/latest/quickstart.html
-[flask-restx-scaling]: https://flask-restx.readthedocs.io/en/latest/scaling.html
-[openapi-specification]: https://swagger.io/docs/specification/v3_0/about/
-[pymongo]: https://pymongo.readthedocs.io/en/stable/
-[pytest]: https://docs.pytest.org/en/stable/
-[pytest-flask]: https://flask.palletsprojects.com/en/stable/testing/
-[mongomock]: https://docs.mongoengine.org/guide/mongomock.html
-[sendgrid-sdk]: https://github.com/sendgrid/sendgrid-python
-[requests-docs]: https://requests.readthedocs.io/en/latest/
-[pytest-mock]: https://pytest-mock.readthedocs.io/
-[pytest-cov]: https://pytest-cov.readthedocs.io/
-[gha]: https://docs.github.com/actions
+**Infrastructure**
+- [Docker](https://www.docker.com/) + [Docker Compose](https://docs.docker.com/compose/) — Containerization
+- [MongoDB 7](https://www.mongodb.com/) — Database (official Docker image)
+- [nginx](https://nginx.org/) — Frontend static server + API reverse proxy
+- [GitHub Actions](https://docs.github.com/actions) — CI/CD
 
-## Running Locally
+**Testing**
+- [pytest](https://docs.pytest.org/) + [pytest-cov](https://pytest-cov.readthedocs.io/) — Test runner and coverage
+- [mongomock](https://github.com/mongomock/mongomock) — In-memory MongoDB for tests
+- [pytest-mock](https://pytest-mock.readthedocs.io/) — Mocking utilities
 
-This assumes you are already running MongoDB (e.g., through
-`brew services restart mongodb-community` on MacOS or
-`sudo systemctl restart mongod` on Linux.
-Find the equivalent for your OS)
+---
 
-### Setting up the environment
+## Running with Docker (Recommended)
 
-1. Check `.envexample` file and follow the instructions there to create
-your `.env` file
-2. Run `make dev_env` to create a virtual environment and install dependencies
+Docker Compose starts everything — MongoDB, the Flask API, and the React frontend — with a single command. **No local Python or Node installation required.**
 
-### Running the server
+### Prerequisites
 
-1. Run `make run_local_server` to run the server. This runs tests first.
-2. Go to [http://127.0.0.1:8000](http://127.0.0.1:8000) to see it running!
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
-You can use `ctrl-c` to stop the server.
+### 1. Clone the repository
 
-### Testing the API server
-
-Run `make tests` to execute the test suite and see the coverage report
-in your terminal. You can also see a visual report by viewing
-[/htmlcov/index.html](/htmlcov/index.html) in your browser.
-
-For targeted unit testing during development, you can run specific files such as:
-
-- `pytest tests/unit/test_email_reminders_service.py -q`
-
-## Current API Endpoints
-
-Active namespaces:
-
-- `/classes`
-  - `GET /classes/` → View class list (template)
-  - `POST /classes/` → Create class (template)
-  - `POST /classes/<class_id>/reminders` → Send reminder notifications to class attendees (template)
-- `/bookings`
-  - `POST /bookings/` → Book class (template)
-  - `GET /bookings/class/<class_id>` → View booking list (template)
-- `/auth`
-  - `POST /auth/register` → Register a new user and return JWT access_token
-  - `POST /auth/login` → Authenticate existing user and return JWT access_token
-  - `POST /auth/validate-token` → Validate a registration invite token
-  - `POST /auth/notification-preferences` → Update user notification preferences
-  - `POST /auth/telegram-link/start` → Generate one-time deep-link for Telegram account linking
-
-## Sending Telegram Reminders
-
-To deliver class reminders through Telegram, complete all of the following:
-
-1. Set `TELEGRAM_BOT_TOKEN` in your `.env`.
-2. Keep `telegram_bot.py` running.
-3. User authenticates and calls `POST /auth/telegram-link/start`.
-4. UI opens the returned `deep_link`, which points to `https://t.me/CoachlyyBot?start=<one-time-token>`.
-5. User taps **Start** in Telegram (token is consumed and chat is linked).
-6. Enable Telegram in `POST /auth/notification-preferences`.
-7. Create/book a future class for that user.
-8. Trigger `POST /classes/<class_id>/reminders` using a trainer JWT.
-
-UI integration example (`Connect Telegram` button):
-
-```ts
-const response = await fetch("/auth/telegram-link/start", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${accessToken}` },
-});
-const data = await response.json();
-window.location.href = data.deep_link;
+```sh
+git clone <repo-url>
+cd cs-uh-2012-software-engineering-group_b
 ```
 
-Example preference update (authenticated as the target user):
+### 2. Set environment variables
+
+Create a `.env` file in the project root (copy from `.envexample`):
+
+```sh
+cp .envexample .env
+```
+
+Edit `.env` and fill in your secrets:
+
+```env
+DB_NAME=eventsref_dev
+DEBUG=true
+JWT_SECRET_KEY=your-secret-key-here
+
+# SendGrid (required for email reminders)
+SENDGRID_API_KEY=your-sendgrid-api-key
+SENDGRID_FROM_EMAIL=noreply@coachly.dev
+SENDGRID_ACCOUNT_EMAIL=your@email.com
+
+# Telegram (optional — only needed for Telegram reminders)
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+```
+
+> `MONGO_URI` is not required in the `.env` — Docker Compose sets it automatically to connect the API to the MongoDB container.
+
+### 3. Start all services
+
+```sh
+docker compose up --build
+```
+
+This starts:
+| Service | URL |
+|---------|-----|
+| React Frontend | http://localhost:3000 |
+| Flask API | http://localhost:8001 |
+| Swagger UI | http://localhost:8001/swagger.json |
+| MongoDB | localhost:27017 (internal) |
+
+### 4. (Optional) Start the Telegram bot
+
+The Telegram bot is a separate service that must be opted into explicitly:
+
+```sh
+docker compose --profile telegram up --build
+```
+
+### 5. Stop all services
+
+```sh
+docker compose down
+```
+
+To also delete the database volume:
+
+```sh
+docker compose down -v
+```
+
+---
+
+## Running Locally (Without Docker)
+
+### Prerequisites
+
+- Python 3.10 or higher
+- MongoDB running locally. Install from [mongodb.com/docs/manual/installation](https://www.mongodb.com/docs/manual/installation/) and start with:
+  - **macOS:** `brew services restart mongodb-community`
+  - **Linux:** `sudo systemctl restart mongod`
+  - **Windows:** Start via Services or `mongod` in a terminal
+
+### Setup
+
+1. Copy the environment file and fill in your values:
+   ```sh
+   cp .envexample .env
+   # Edit .env with your values
+   ```
+
+2. Create a virtual environment and install dependencies:
+   ```sh
+   make dev_env
+   ```
+
+### Run the backend
+
+```sh
+make run_local_server
+```
+
+This runs the test suite first, then starts Flask at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+To skip tests and run directly:
+
+```sh
+source .venv/bin/activate        # Mac/Linux
+# or: . .venv/Scripts/activate   # Windows
+FLASK_APP=app flask run --debug --host=0.0.0.0 --port 8000
+```
+
+### (Optional) Seed the database
+
+```sh
+python seed_db.py
+```
+
+---
+
+## Frontend Development
+
+The React frontend lives in the `frontend/` directory. It communicates with the Flask backend through a proxy — no CORS configuration needed.
+
+### Prerequisites
+
+- [Node.js 20+](https://nodejs.org/)
+- The Flask backend running on port 8000
+
+### Setup and run
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend is available at [http://localhost:5173](http://localhost:5173). The Vite dev server automatically proxies all `/auth/`, `/classes/`, and `/bookings/` requests to the Flask backend at `http://localhost:8000`.
+
+### Frontend pages
+
+| Route | Page | Access |
+|-------|------|--------|
+| `/` | Redirects to `/classes` | All |
+| `/login` | Login form | Public |
+| `/register` | Registration form | Public |
+| `/classes` | Class listing + Book button | All (booking: members only) |
+| `/classes/create` | Create class form | Trainer / Admin only |
+
+### Build for production
+
+```sh
+cd frontend
+npm run build
+```
+
+The built files go to `frontend/dist/`. In Docker, nginx serves these files and proxies API calls to the backend automatically.
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MONGO_URI` | Yes (local) | MongoDB connection string. Set automatically in Docker. |
+| `DB_NAME` | Yes | Database name (e.g., `eventsref_dev`) |
+| `MOCK_DB` | Yes | `"true"` uses in-memory mock (for tests); `"false"` uses real MongoDB |
+| `DEBUG` | Yes | Flask debug mode (`"true"` or `"false"`) |
+| `JWT_SECRET_KEY` | Yes | Secret key for signing JWTs — keep this private |
+| `SENDGRID_API_KEY` | Yes | SendGrid API key for sending email reminders |
+| `SENDGRID_FROM_EMAIL` | Yes | Sender address for reminder emails |
+| `SENDGRID_ACCOUNT_EMAIL` | Yes | Your SendGrid account email |
+| `TELEGRAM_BOT_TOKEN` | Optional | Telegram Bot API token — required only for Telegram reminders |
+
+---
+
+## API Endpoints
+
+The Swagger UI (interactive docs) is available at `http://localhost:8001` (Docker) or `http://localhost:8000` (local).
+
+### Auth — `/auth`
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/auth/register` | Register new user, returns JWT | Public |
+| POST | `/auth/login` | Login, returns JWT | Public |
+| POST | `/auth/validate-token` | Validate an invite token | Public |
+| POST | `/auth/notification-preferences` | Update email/Telegram opt-ins | Authenticated |
+| POST | `/auth/telegram-link/start` | Generate one-time Telegram deep-link | Authenticated |
+
+### Classes — `/classes`
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/classes/` | List all fitness classes | Public |
+| POST | `/classes/` | Create a class (supports recurrence) | Trainer / Admin |
+| POST | `/classes/<class_id>/reminders` | Send reminders to class attendees | Trainer |
+
+### Bookings — `/bookings`
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/bookings/` | Book a fitness class | Member |
+| GET | `/bookings/class/<class_id>` | View all bookings for a class | Trainer / Admin |
+
+---
+
+## Authentication & Authorization
+
+This API uses **JWT (JSON Web Tokens)** for stateless authentication and role-based access control.
+
+### Roles
+
+| Role | Can Do |
+|------|--------|
+| `member` | View classes, book classes, update notification preferences |
+| `trainer` | All member actions + create classes, view bookings, send reminders |
+| `admin` | All trainer actions |
+
+### Registration & Role Assignment
+
+Roles are assigned at registration using invite tokens:
+
+| Token | Role Granted |
+|-------|-------------|
+| *(no token)* | `member` |
+| `trainer-secret-123` | `trainer` |
+| `admin-secret-456` | `admin` |
+
+Example registration payload:
+```json
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "password": "securepassword",
+  "token": "trainer-secret-123"
+}
+```
+
+### Using the JWT
+
+After registering or logging in, include the returned `access_token` in all protected requests:
+
+```
+Authorization: Bearer <your_jwt_here>
+```
+
+**In Swagger UI:** Click **Authorize** (top right) and enter `Bearer <your_jwt_here>`.
+
+---
+
+## Recurring Classes (Feature 6)
+
+Trainers can create classes that repeat daily or weekly by setting `recurrence_type` and `recurrence_end_date` in the create class request.
+
+### Create class payload
+
+```json
+{
+  "title": "Morning Yoga",
+  "datetime": "2027-02-20T09:00:00Z",
+  "capacity": 20,
+  "trainer_name": "Alex Trainer",
+  "recurrence_type": "weekly",
+  "recurrence_end_date": "2027-06-20T09:00:00Z"
+}
+```
+
+| Field | Values | Description |
+|-------|--------|-------------|
+| `recurrence_type` | `one_time`, `daily`, `weekly` | How often the class repeats |
+| `recurrence_end_date` | ISO 8601 date string | Last date for recurring instances (required if recurrence is not `one_time`) |
+
+The system generates individual class records for each occurrence, each bookable independently. Each instance decrements its own `available_spots` when booked.
+
+**In the frontend:** The Create Class form shows the recurrence end date field automatically when you select Daily or Weekly.
+
+---
+
+## Telegram Notifications (Feature 7)
+
+Users can opt into Telegram reminders in addition to (or instead of) email. Each user controls their own notification channels.
+
+### Setup
+
+1. Set `TELEGRAM_BOT_TOKEN` in your `.env`.
+2. Start the Telegram bot process:
+   - **Docker:** `docker compose --profile telegram up`
+   - **Local:** `python telegram_bot.py` (in a separate terminal)
+
+### Linking a Telegram account
+
+Complete these steps as the user who wants to receive Telegram reminders:
+
+1. **Authenticate** and call `POST /auth/telegram-link/start` (requires JWT).
+2. The response contains a `deep_link` URL (e.g., `https://t.me/CoachlyyBot?start=<token>`).
+3. **Open the deep link** — this redirects you to the Telegram bot.
+4. **Tap Start** in Telegram — this consumes the one-time token and links your chat ID.
+5. **Enable Telegram** by calling `POST /auth/notification-preferences`:
 
 ```json
 {
@@ -207,60 +453,83 @@ Example preference update (authenticated as the target user):
 }
 ```
 
-Notes:
-- The API calls Telegram Bot API `sendMessage` under the hood.
-- If `TELEGRAM_BOT_TOKEN` is missing or invalid, reminder sending will fail at dispatch time.
-- Telegram linking tokens are one-time and expire quickly; expired links must be regenerated.
+### Triggering reminders
 
-## Virtual Environment (Manual)
+A trainer calls `POST /classes/<class_id>/reminders` with their JWT. The system checks each attendee's preferences and dispatches via the enabled channels (email and/or Telegram).
 
-Manually activating and deactivating the virtual environment is useful for
-debugging issues and running specific scripts with flexibility (e.g., you can
-run `FLASK_APP=app flask run --debug --host=0.0.0.0 --port 8000`
-inside the virtual environment to directly start
-the server without running tests first).
+**Frontend integration example** (connect Telegram button):
 
-To activate the virtual environment manually:
-
-```sh
-source .venv/bin/activate
+```js
+const res = await fetch('/auth/telegram-link/start', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}` },
+})
+const { deep_link } = await res.json()
+window.location.href = deep_link
 ```
 
-Alternatively, you can use:
+> **Notes:**
+> - Telegram linking tokens are one-time use and expire quickly. Regenerate if expired.
+> - If `TELEGRAM_BOT_TOKEN` is missing or invalid, Telegram reminder dispatch will fail at send time.
+> - Email and Telegram can both be enabled simultaneously.
+
+---
+
+## CI/CD Pipeline
+
+### Continuous Integration
+
+The CI pipeline runs automatically on every push and pull request to `main`.
+
+**Workflow file:** `.github/workflows/ci.yml`
+
+**What it does:**
+1. Checks out the repository
+2. Sets up Python 3.10
+3. Installs `requirements.txt` and `requirements-dev.txt`
+4. Runs the full test suite with coverage: `pytest -vv --cov=app tests/`
+
+**Environment for CI:** Uses `MOCK_DB=true` (mongomock, no real database needed). Sensitive values (`MONGO_URI`, `JWT_SECRET_KEY`, `SENDGRID_API_KEY`, etc.) are stored in **GitHub Secrets**.
+
+### Required GitHub Secrets
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Purpose |
+|--------|---------|
+| `MONGO_URI` | MongoDB URI (used if tests ever need a real DB) |
+| `JWT_SECRET_KEY` | JWT signing secret |
+| `SENDGRID_API_KEY` | SendGrid API key |
+| `SENDGRID_FROM_EMAIL` | Sender email address |
+| `SENDGRID_ACCOUNT_EMAIL` | SendGrid account email |
+
+---
+
+## Running Tests
 
 ```sh
-. .venv/bin/activate
+make tests
 ```
 
-To deactivate the virtual environment:
+Or directly with pytest:
 
 ```sh
-deactivate
+pytest -vv --cov=app tests/
 ```
 
-# Authentication and Authorization
-This API uses JWT (JSON Web Tokens) to enforce role-based access control.
+View the HTML coverage report:
 
-## Role Assignment during Registration
-Roles are assigned at the time of registration (`/auth/register`) using hard-coded invite tokens:
+```sh
+open htmlcov/index.html     # Mac
+start htmlcov/index.html    # Windows
+```
 
-* Include `"token": "trainer-secret-123"` in the request body to register as a `"trainer"`.
-* Include `"token": "admin-secret-456"` to register as an `"admin"`.
-* Omitting the token defaults the new user to a `"member"`.
+Run a specific test file:
 
-## Authenticating API Requests
-After registering or logging in, the API returns an `access_token`. This JWT must be included in the headers of any protected endpoint request:
+```sh
+pytest tests/unit/test_fitness_api.py -q
+pytest tests/unit/test_booking_api.py -q
+pytest tests/unit/test_email_reminders_service.py -q
+```
 
-* **Header name:** `Authorization`
-* **Format:** `Bearer <JWT>`
-
-**CRITICAL:** You must explicitly include the string `Bearer ` (with a trailing space) before the JWT. Omitting this prefix will result in an authorization failure.
-
-## Using Swagger UI
-To authenticate in the Swagger UI:
-
-1. Click the **Authorize** button (top right).
-2. Paste your token in the Value field using the exact format: `Bearer <your_jwt_here>`.
-3. Click **Authorize**. The UI will now automatically attach this header to your protected endpoint requests.
-
-![alt text](JWT-auth.gif)
+Tests use `MOCK_DB=true` via environment configuration, so no MongoDB installation is needed to run tests.
