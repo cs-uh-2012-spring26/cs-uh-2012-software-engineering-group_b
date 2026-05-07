@@ -489,7 +489,7 @@ The CI pipeline runs automatically on every push and pull request to `main`.
 3. Installs `requirements.txt` and `requirements-dev.txt`
 4. Runs the full test suite with coverage: `pytest -vv --cov=app tests/`
 
-**Environment for CI:** Uses `MOCK_DB=true` (mongomock, no real database needed). Sensitive values (`MONGO_URI`, `JWT_SECRET_KEY`, `SENDGRID_API_KEY`, etc.) are stored in **GitHub Secrets**.
+**Environment for CI:** Uses `MOCK_DB=true` (mongomock, no real DB needed). The app accepts `DB_URI` (preferred) and `MONGO_URI` (backward-compatible), and CI injects secrets via GitHub Actions.
 
 ### Required GitHub Secrets
 
@@ -497,11 +497,38 @@ Go to **Settings → Secrets and variables → Actions** and add:
 
 | Secret | Purpose |
 |--------|---------|
-| `MONGO_URI` | MongoDB URI (used if tests ever need a real DB) |
+| `MONGO_URI` | MongoDB URI secret used by CI (`DB_URI` is populated from this value) |
 | `JWT_SECRET_KEY` | JWT signing secret |
 | `SENDGRID_API_KEY` | SendGrid API key |
 | `SENDGRID_FROM_EMAIL` | Sender email address |
 | `SENDGRID_ACCOUNT_EMAIL` | SendGrid account email |
+
+### Continuous Deployment (Production VM over SSH)
+
+The CD workflow (`.github/workflows/cd.yml`) deploys only **after** the CI workflow succeeds on `main` (and can also be run manually from **Actions → CD Pipeline → Run workflow**).
+
+Deployment steps:
+1. Connect to the production VM via SSH (PEM private key from GitHub Secret)
+2. Clone repo if missing, otherwise pull latest `main`
+3. Run `sudo docker compose down`
+4. Run `sudo docker compose up -d --build --remove-orphans`
+
+Add these CD secrets in GitHub:
+
+| Secret | Purpose |
+|--------|---------|
+| `PROD_HOST` | Production server public IP or DNS |
+| `PROD_USER` | SSH username on the server (for example `ubuntu`) |
+| `PROD_SSH_KEY` | Full PEM private key content used for SSH authentication |
+| `PROD_APP_DIR` | Absolute path to the deployed repo on the server |
+| `PROD_DB_URI` | Production DB URI (optional for this compose setup, kept for env parity) |
+| `PROD_DB_NAME` | Production `DB_NAME` value |
+| `PROD_DEBUG` | Production `DEBUG` value (usually `false`) |
+| `PROD_JWT_SECRET_KEY` | Production JWT secret |
+| `PROD_SENDGRID_API_KEY` | Production SendGrid API key |
+| `PROD_SENDGRID_FROM_EMAIL` | Production sender email |
+| `PROD_SENDGRID_ACCOUNT_EMAIL` | Production SendGrid account email |
+| `PROD_TELEGRAM_BOT_TOKEN` | Production Telegram bot token |
 
 ---
 

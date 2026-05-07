@@ -14,7 +14,8 @@ jobs:
     # These environment variables are required by config.py
     # MOCK_DB must be "true" to use mongomock instead of a real DB
     env:
-      # Injecting sensitive variables using GitHub Secrets (Task 4 Fix)
+      # Injecting sensitive variables using GitHub Secrets
+      DB_URI: ${{ secrets.MONGO_URI }}
       MONGO_URI: ${{ secrets.MONGO_URI }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
