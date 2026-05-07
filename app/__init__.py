@@ -8,6 +8,7 @@ from http import HTTPStatus
 from flask import Flask
 from flask_restx import Api
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
 from app.apis import MSG
@@ -17,6 +18,7 @@ from app.exceptions import AppError
 def create_app(test_config = None):
     app = Flask(__name__)
     app.config.from_object(Config)
+    CORS(app)
 
     if(test_config):
         app.config.update(test_config)
