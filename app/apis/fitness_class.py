@@ -45,7 +45,7 @@ class_model = api.model(
         AVAILABLE_SPOTS: fields.Integer(example=_EXAMPLE_CLASS[AVAILABLE_SPOTS]),
         TRAINER_NAME: fields.String(example=_EXAMPLE_CLASS[TRAINER_NAME]),
         RECURRENCE_TYPE: fields.String(
-            enum=["one_time", "daily", "weekly"],
+            enum=["one_time", "daily", "weekly", "monthly"],
             example="weekly",
             required=False
         ),
@@ -64,7 +64,7 @@ create_class_model = api.model(
         CAPACITY: fields.Integer(example=_EXAMPLE_CLASS[CAPACITY]),
         TRAINER_NAME: fields.String(example=_EXAMPLE_CLASS[TRAINER_NAME]),
         RECURRENCE_TYPE: fields.String(
-            enum=["one_time", "daily", "weekly"],
+            enum=["one_time", "daily", "weekly", "monthly"],
             example="weekly",
             required=False
         ),

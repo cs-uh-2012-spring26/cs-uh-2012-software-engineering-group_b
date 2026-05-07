@@ -109,6 +109,7 @@ export default function CreateClassPage() {
             <option value="one_time">One-time</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
           </select>
         </div>
         {isRecurring && (

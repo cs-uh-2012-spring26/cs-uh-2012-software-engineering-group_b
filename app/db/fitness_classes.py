@@ -4,6 +4,7 @@ from pymongo import ReturnDocument
 
 from app.db.constants import ID
 from datetime import datetime, timedelta
+from calendar import monthrange
 
 # Collection name
 FITNESS_CLASS_COLLECTION = "fitness_classes"
@@ -56,10 +57,25 @@ def generate_recurring_instances(start_dt: str, recurrence_type: str, end_dt: st
     
     current = datetime.fromisoformat(start_dt.replace("Z", "+00:00"))
     end = datetime.fromisoformat(end_dt.replace("Z", "+00:00")) if end_dt else None
-    delta = timedelta(days=1) if recurrence_type == "daily" else timedelta(weeks=1)
+    if recurrence_type == "daily":
+        delta = timedelta(days=1)
+        def next_dt(value: datetime) -> datetime:
+            return value + delta
+    elif recurrence_type == "weekly":
+        delta = timedelta(weeks=1)
+        def next_dt(value: datetime) -> datetime:
+            return value + delta
+    elif recurrence_type == "monthly":
+        def next_dt(value: datetime) -> datetime:
+            year = value.year + (value.month // 12)
+            month = (value.month % 12) + 1
+            day = min(value.day, monthrange(year, month)[1])
+            return value.replace(year=year, month=month, day=day)
+    else:
+        return instances
     
     while True:
-        current += delta
+        current = next_dt(current)
         if end and current > end:
             break
         instances.append(current.isoformat().replace("+00:00", "Z"))
