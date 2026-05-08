@@ -4,7 +4,7 @@
 
 A full-stack fitness class booking platform built with **Flask-RESTX** (backend API) and **React** (frontend). Users can register, browse fitness classes, book sessions, and receive reminders via email or Telegram. Trainers and admins can create classes (including recurring ones) and send notifications to attendees.
 
-> **Bonus Frontend deployed at:** `http://<VM_IP>:3000` *(update this URL once your VM is provisioned)*
+> **Bonus Frontend deployed at:** `http://18.118.151.72:3000/`
 
 ---
 
